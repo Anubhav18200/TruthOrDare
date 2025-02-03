@@ -18,7 +18,7 @@ export default function AppNavigator() {
         <Stack.Screen name="AddPlayers" component={AddPlayersScreen} />
         <Stack.Screen name="SelectEnvironment" component={SelectEnvironmentScreen} />
         <Stack.Screen name="GameBoard" component={GameBoardScreen} />
-        <Stack.Screen name="TruthOrDare" component={TruthOrDareScreen} />
+        {/* <Stack.Screen name="TruthOrDare" component={TruthOrDareScreen} /> */}
         <Stack.Screen name="EndGame" component={EndGameScreen} />
       </Stack.Navigator>
     </NavigationContainer>
