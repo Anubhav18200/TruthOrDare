@@ -122,6 +122,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
     if (randomGiftPositions.includes(newPosition)) {
       const randomChoice = Math.floor(Math.random() * 2);
+      console.log(randomChoice);
       if (randomChoice === 0) {
         setRewardPenaltyGif(rewardGif);
       } else {
@@ -195,9 +196,8 @@ export default function GameBoardScreen({ route, navigation }) {
     setTimer(120);
   };
   
+  let move = 0;
   const handleTaskCompletion = (completed) => {
-    let move = 0;
-  
     if (rewardPenaltyGif) {
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
@@ -208,7 +208,6 @@ export default function GameBoardScreen({ route, navigation }) {
         move = -getPenaltyMovement(difficulty);
       }
     }
-
     console.log(move);
 
     const newPositions = [...playerPositions];
@@ -242,7 +241,6 @@ export default function GameBoardScreen({ route, navigation }) {
     outputRange: ['0deg', '360deg'],
   });
 
-  console.log(rewardPenaltyGif);
 
   return (
     <View style={styles.container}>      
