@@ -11,7 +11,6 @@ export default function HomeScreen({ navigation }) {
           source={require('../assets/logo.png')} 
           style={styles.logo}
         />
-        <Text style={styles.title}>Truth or Dare Twisted!</Text>
         <Text style={styles.subtitle}>Are you brave enough to face the unexpected?</Text>
       </View>
 
@@ -21,7 +20,7 @@ export default function HomeScreen({ navigation }) {
           activeOpacity={0.8}
           onPress={() => navigation.navigate('AddPlayers')}
         >
-          <Text style={styles.buttonText}>Accept the Challenge</Text>
+          <Text style={styles.buttonText}>Play</Text>
           <Text style={styles.buttonSubtext}>If you dare...</Text>
         </TouchableOpacity>
 
@@ -51,10 +50,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20
   },
   logo: {
-    width: width * 0.8,
-    height: width * 0.6,
+    width: width * 1,
+    height: width * 0.8,
     resizeMode: 'contain',
-    marginBottom: 30
+    marginBottom: 10
   },
   title: {
     fontSize: 32,
@@ -67,8 +66,8 @@ const styles = StyleSheet.create({
     textShadowRadius: 4
   },
   subtitle: {
-    fontSize: 18,
-    color: '#FF80AB',
+    fontSize: 22,
+    color: 'blue',
     textAlign: 'center',
     marginBottom: 20,
     fontStyle: 'italic',
@@ -100,7 +99,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -108,6 +107,7 @@ const styles = StyleSheet.create({
   },
   buttonSubtext: {
     color: '#FFFFFF',
+    left: 4,
     fontSize: 16,
     fontStyle: 'italic',
     opacity: 0.9

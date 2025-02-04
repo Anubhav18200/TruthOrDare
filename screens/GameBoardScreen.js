@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Image, Animated, Dimensions } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import { tasks } from '../Data/tasksData';
+
 
 const playerIcons = [
   require('../assets/beer2.png'),
@@ -13,6 +13,8 @@ const playerIcons = [
 const giftIcon = require('../assets/gift.png');
 const rewardGif = require('../assets/gift.png');
 const penaltyGif = require('../assets/beer3.jpg');
+const ghostImg = require('../assets/ghost1.jpg');
+const exerImg = require('../assets/exercise1.jpg');
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
@@ -31,11 +33,17 @@ export default function GameBoardScreen({ route, navigation }) {
   const [randomTasks, setRandomTasks] = useState(null);
   const [finishedPlayers, setFinishedPlayers] = useState([]);
   const [isGameFinished, setIsGameFinished] = useState(false);
+  const [selectedCategoryImage, setSelectedCategoryImage] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showCategoryImage, setShowCategoryImage] = useState(false);
+  const [opacity] = useState(new Animated.Value(0)); // Start with opacity 0
+  const [scale] = useState(new Animated.Value(0.8)); // Start with smaller scale
 
   const boardSize = 100;
   const [diceAnimationValue] = useState(new Animated.Value(0));
   const { width } = Dimensions.get('window');
   const squareSize = 38;
+  
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -49,6 +57,38 @@ export default function GameBoardScreen({ route, navigation }) {
   const [randomGiftPositions] = useState(generateRandomGiftPositions());
 
   useEffect(() => {
+
+    if (showCategoryImage) {
+      // Animate opacity and scale when the image is shown
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1, // Fade in
+          duration: 1000, // Duration of the fade effect
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1, // Scale to normal size
+          duration: 1000, // Duration of the scale effect
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Reset opacity and scale when the image is hidden
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0, // Fade out
+          duration: 1000, // Duration of the fade effect
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.8, // Scale back down
+          duration: 1000, // Duration of the scale effect
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+
+
     let interval;
     if (showTaskModal && timer > 0) {
       interval = setInterval(() => {
@@ -58,7 +98,7 @@ export default function GameBoardScreen({ route, navigation }) {
       handleTaskCompletion(false);
     }
     return () => clearInterval(interval);
-  }, [showTaskModal, timer]);
+  }, [showTaskModal, timer, showCategoryImage]);
 
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
@@ -168,36 +208,71 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
+    console.log(type);
+    // Select a random category (Ghost, Exercise, etc.)
+    console.log(tasks[environment][type]);
+    const categories = Object.keys(tasks[environment][type]);
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    if(randomCategory=== 'Ghost'){
+      setSelectedCategoryImage(ghostImg);
+    }
+    else{
+      setSelectedCategoryImage(exerImg);
+    }
+  
+    // Retrieve category information (image and tasks)
+    const selectedCategoryData = tasks[environment][type][randomCategory];
     
+    // Set the random category image
+    console.log(randomCategory)
+    //setSelectedCategoryImage(selectedCategoryData.image);
+
+    // Get the random task based on the selected category and difficulty levels
     const selectedTasks = {
-      Easy: getRandomTask(tasks[environment][type.toLowerCase()].Easy),
-      Medium: getRandomTask(tasks[environment][type.toLowerCase()].Medium),
-      Hard: getRandomTask(tasks[environment][type.toLowerCase()].Hard)
+      Easy: getRandomTask(selectedCategoryData.Easy),
+      Medium: getRandomTask(selectedCategoryData.Medium),
+      Hard: getRandomTask(selectedCategoryData.Hard)
     };
-    
+
     setRandomTasks(selectedTasks);
+    setSelectedCategory(randomCategory); // Store the selected category
+
     setShowTruthDareModal(false);
     setShowDifficultyModal(true);
   };
+
+  // const getRandomCategoryImage = (category) => {
+  //   const images = categoryImages[category];
+  //   const randomIndex = Math.floor(Math.random() * images.length);
+  //   return images[randomIndex];
+  // };
 
   const getRandomTask = (tasksArray) => {
     const randomIndex = Math.floor(Math.random() * tasksArray.length);
     return tasksArray[randomIndex];
   };
 
-  const handleDifficultySelection = (difficulty) => {
-    setCurrentTask({ 
-      type: selectedType, 
-      difficulty, 
-      task: randomTasks[difficulty]
-    });
-    setShowDifficultyModal(false);
-    setShowTaskModal(true);
-    setTimer(120);
-  };
+ // Helper function to handle difficulty selection
+ const handleDifficultySelection = (difficulty) => {
+  setCurrentTask({
+    type: selectedType,
+    difficulty,
+    task: randomTasks[difficulty],
+    category: selectedCategory // Add selected category to the task object
+  });
+
+  setShowDifficultyModal(false);
+  // Hide the image after 3-4 seconds
+  setShowCategoryImage(true);
+  setTimeout(() => {
+    setShowCategoryImage(false); // Hide the category image
+    setShowTaskModal(true); // Show the task modal
+    setTimer(120); // Start the timer for the task
+  }, 4000); // Show for 4 seconds
+};
   
-  let move = 0;
   const handleTaskCompletion = (completed) => {
+    let move = 0;
     if (rewardPenaltyGif) {
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
@@ -241,7 +316,7 @@ export default function GameBoardScreen({ route, navigation }) {
     outputRange: ['0deg', '360deg'],
   });
 
-
+  console.log(selectedCategoryImage);
   return (
     <View style={styles.container}>      
       <Text style={styles.title}>Truth or Dare</Text>
@@ -284,76 +359,136 @@ export default function GameBoardScreen({ route, navigation }) {
         </Animated.View>
       </TouchableOpacity>
 
-      <Modal visible={showRewardPenaltyModal} transparent animationType="slide">
+      <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {rewardPenaltyGif === rewardGif ? 'Reward!' : 'Penalty!'}
+              </Text>
+            </View>
             <Image source={rewardPenaltyGif} style={styles.rewardPenaltyImage} />
             <TouchableOpacity
-              style={styles.modalButton}
+              style={[styles.modalButton, {
+                backgroundColor: rewardPenaltyGif === rewardGif ? '#4CAF50' : '#F44336'
+              }]}
               onPress={() => {
                 setShowRewardPenaltyModal(false);
                 setShowTruthDareModal(true);
               }}
             >
-              <Text style={styles.modalButtonText}>Next</Text>
+              <Text style={styles.modalButtonText}>Continue</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      <Modal visible={showTruthDareModal} transparent animationType="slide">
+      <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Truth or Dare</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => handleTruthDareSelection('Truth')}
-            >
-              <Text style={styles.modalButtonText}>Truth</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => handleTruthDareSelection('Dare')}
-            >
-              <Text style={styles.modalButtonText}>Dare</Text>
-            </TouchableOpacity>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Your Path</Text>
+              <Text style={styles.modalSubtitle}>Truth or Dare awaits...</Text>
+            </View>
+            <View style={styles.truthDareContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.truthButton]}
+                onPress={() => handleTruthDareSelection('Truth')}
+              >
+                <Text style={styles.modalButtonText}>TRUTH</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.dareButton]}
+                onPress={() => handleTruthDareSelection('Dare')}
+              >
+                <Text style={styles.modalButtonText}>DARE</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
 
-      <Modal visible={showDifficultyModal} transparent animationType="slide">
+      <Modal visible={showDifficultyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Difficulty</Text>
-            {randomTasks && Object.entries(randomTasks).map(([difficulty, task]) => (
-              <View key={difficulty} style={styles.difficultyOption}>
-                <Text style={styles.difficultyTitle}>{difficulty}</Text>
-                <Text style={styles.taskText}>{task}</Text>
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={() => handleDifficultySelection(difficulty)}
-                >
-                  <Text style={styles.modalButtonText}>Select {difficulty}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Difficulty</Text>
+              <Text style={styles.modalSubtitle}>Choose your challenge level</Text>
+            </View>
+            <View style={styles.difficultyContainer}>
+              {randomTasks && Object.entries(randomTasks).map(([difficulty, task]) => {
+                const difficultyStyle = {
+                  Easy: styles.difficultyEasy,
+                  Medium: styles.difficultyMedium,
+                  Hard: styles.difficultyHard,
+                }[difficulty];
+
+                return (
+                  <View key={difficulty} style={[styles.difficultyOption, difficultyStyle]}>
+                    <Text style={styles.difficultyTitle}>{difficulty}</Text>
+                    {/* <Text style={styles.taskText}>{task}</Text> */}
+                    <TouchableOpacity
+                      style={[styles.modalButton, {
+                        backgroundColor: {
+                          Easy: '#4CAF50',
+                          Medium: '#FF9800',
+                          Hard: '#F44336',
+                        }[difficulty],
+                      }]}
+                      onPress={() => handleDifficultySelection(difficulty)}
+                    >
+                      <Text style={styles.modalButtonText}>Accept Challenge</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
           </View>
         </View>
       </Modal>
 
-      <Modal visible={showTaskModal} transparent animationType="slide">
+      <View style={styles.imgcontainer}>
+      {showCategoryImage && (
+        <Animated.View
+        style={[
+          styles.imageContainer,
+          {
+            opacity, // Bind opacity to the animated value
+            transform: [{ scale }], // Bind scale to the animated value
+          },
+        ]}
+      >
+          <Image
+            source={selectedCategoryImage} 
+            style={styles.categoryImage}
+          />
+        </Animated.View>
+      )}
+      </View>
+
+
+      <Modal visible={showTaskModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {currentTask && (
               <>
-                <Text style={styles.modalTitle}>{currentTask.type} - {currentTask.difficulty}</Text>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{currentTask.type}</Text>
+                  <Text style={[styles.modalSubtitle, { color: {
+                    Easy: '#4CAF50',
+                    Medium: '#FF9800',
+                    Hard: '#F44336',
+                  }[currentTask.difficulty] }]}>
+                    {currentTask.difficulty} Challenge
+                  </Text>
+                </View>
                 <Text style={styles.taskText}>{currentTask.task}</Text>
-                <Text style={styles.timer}>Time remaining: {formatTime(timer)}</Text>
+                <Text style={styles.timer}>{formatTime(timer)}</Text>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.successButton]}
                   onPress={() => handleTaskCompletion(true)}
                 >
-                  <Text style={styles.modalButtonText}>Done</Text>
+                  <Text style={styles.modalButtonText}>Complete Challenge</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -386,6 +521,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     padding: 0,
   },
+  imgcontainer: {
+    flex: 1,  // Take up the full screen
+    justifyContent: 'center',  // Center the content vertically
+    alignItems: 'center',  // Center the content horizontally
+    position: 'absolute',  // Position it on top of the game screen
+    top: 0,  // Align at the top of the screen
+    left: 0,  // Align at the left of the screen
+    width: '100%',  // Take full width
+    height: '100%',  // Take full height
+  },
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,  // Take at least half the screen height
+    width: '100%',  // Full width
+    height: '50%',  // Ensure it covers half the screen or more
+    position: 'absolute',  // Keep it in front of the other content
+    zIndex: 1000,  // Higher z-index to stay on top
+  },
+  categoryImage: {
+    width: 300,  // Adjust the size as needed
+    height: 300,  // Adjust the size as needed
+    borderRadius: 10,
+  },
+
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -465,65 +625,96 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
+  // modalOverlay: {
+  //   flex: 1,
+  //   backgroundColor: 'rgba(0,0,0,0.5)',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   modalContent: {
     backgroundColor: '#FFF',
-    borderRadius: 15,
+    borderRadius: 20,
     padding: 25,
-    width: '85%',
+    width: '90%',
     maxWidth: 400,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 25,
     textAlign: 'center',
-    color: '#333',
+    color: '#1a1a1a',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   modalButton: {
     backgroundColor: '#2196F3',
     padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    width: '90%',
+    borderRadius: 12,
+    marginVertical: 8,
+    width: '100%',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   modalButtonText: {
     color: '#FFF',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   difficultyOption: {
     width: '100%',
-    marginBottom: 15,
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
   difficultyTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: 10,
+    color: '#1a1a1a',
+    textAlign: 'center',
   },
   taskText: {
     fontSize: 18,
-    marginBottom: 15,
+    marginBottom: 20,
     textAlign: 'center',
-    color: '#555',
+    color: '#495057',
+    lineHeight: 24,
   },
   timer: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 15,
+    marginVertical: 20,
     color: '#FF5722',
+    fontFamily: 'System',
   },
   successButton: {
     backgroundColor: '#4CAF50',
@@ -532,8 +723,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#F44336',
   },
   rewardPenaltyImage: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
+    marginBottom: 25,
+    borderRadius: 60,
+  },
+  truthDareContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+  },
+  truthButton: {
+    backgroundColor: '#4CAF50',
+    width: '48%',
+  },
+  dareButton: {
+    backgroundColor: '#FF5722',
+    width: '48%',
+  },
+  difficultyContainer: {
+    width: '100%',
+  },
+  difficultyEasy: {
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+  },
+  difficultyMedium: {
+    borderColor: '#FF9800',
+    borderWidth: 2,
+  },
+  difficultyHard: {
+    borderColor: '#F44336',
+    borderWidth: 2,
+  },
+  modalHeader: {
+    width: '100%',
+    alignItems: 'center',
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    paddingBottom: 15,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#6c757d',
+    marginTop: 5,
   },
 });
