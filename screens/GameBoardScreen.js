@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Image, Animated, Dimensions } from 'react-native';
 import { tasks } from '../Data/tasksData';
+import RollDiceScreen from '../screens/RollDiceScreen';
 
 
 const playerIcons = [
@@ -18,6 +19,7 @@ const exerImg = require('../assets/exercise1.jpg');
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
+  console.log("hello",randomNumber);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [playerPositions, setPlayerPositions] = useState(Array(players.length).fill(1));
   const [diceRoll, setDiceRoll] = useState(null);
@@ -38,13 +40,12 @@ export default function GameBoardScreen({ route, navigation }) {
   const [showCategoryImage, setShowCategoryImage] = useState(false);
   const [opacity] = useState(new Animated.Value(0)); // Start with opacity 0
   const [scale] = useState(new Animated.Value(0.8)); // Start with smaller scale
-
+  const [randomNumber, setRandomNumber] = useState(null);
   const boardSize = 100;
   const [diceAnimationValue] = useState(new Animated.Value(0));
   const { width } = Dimensions.get('window');
   const squareSize = 38;
   
-
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
     while (giftPositions.size < 20) {
@@ -57,6 +58,9 @@ export default function GameBoardScreen({ route, navigation }) {
   const [randomGiftPositions] = useState(generateRandomGiftPositions());
 
   useEffect(() => {
+    if (randomNumber !== null) {
+      rollDice(); // Trigger the dice roll function when randomNumber is set
+    }
 
     if (showCategoryImage) {
       // Animate opacity and scale when the image is shown
@@ -98,7 +102,7 @@ export default function GameBoardScreen({ route, navigation }) {
       handleTaskCompletion(false);
     }
     return () => clearInterval(interval);
-  }, [showTaskModal, timer, showCategoryImage]);
+  }, [showTaskModal, timer, showCategoryImage,randomNumber]);
 
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
@@ -130,6 +134,8 @@ export default function GameBoardScreen({ route, navigation }) {
   };
 
   const rollDice = () => {
+    if (randomNumber === null) return;
+    
     if (finishedPlayers.includes(currentPlayerIndex)) {
       const nextPlayer = findNextActivePlayer(currentPlayerIndex);
       if (nextPlayer !== -1) {
@@ -139,7 +145,8 @@ export default function GameBoardScreen({ route, navigation }) {
     }
 
     setIsRolling(true);
-    const roll = Math.floor(Math.random() * 6) + 1;
+    const roll = randomNumber;
+    console.log("roll",roll);
     setDiceRoll(roll);
 
     Animated.sequence([
@@ -329,7 +336,7 @@ export default function GameBoardScreen({ route, navigation }) {
       </View>
       <View style={styles.diceResultContainer}>
         <Text style={styles.diceResultText}>
-          {diceRoll !== null ? `You rolled: ${diceRoll}` : 'Roll the dice!'}
+          {randomNumber !== null ? `You rolled: ${randomNumber}` : 'Roll the dice!'}
         </Text>
       </View>
 
@@ -348,8 +355,10 @@ export default function GameBoardScreen({ route, navigation }) {
           </View>
         ))}
       </View>
-
-      <TouchableOpacity 
+        <View style={styles.rollDice}>
+        <RollDiceScreen setRandomNumber={setRandomNumber} />
+        </View>
+      {/* <TouchableOpacity 
         style={styles.button} 
         onPress={rollDice} 
         disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
@@ -357,7 +366,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <Animated.View style={{ transform: [{ rotate: diceTransform }] }}>
           <Text style={styles.buttonText}>🎲 Roll Dice</Text>
         </Animated.View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -770,4 +779,9 @@ const styles = StyleSheet.create({
     color: '#6c757d',
     marginTop: 5,
   },
+  rollDice: {
+    height: 150,
+    width: 150,
+    //marginBottom: 20,
+  }
 });

@@ -8,6 +8,7 @@ import GameBoardScreen from '../screens/GameBoardScreen';
 import TruthOrDareScreen from '../screens/TruthOrDareScreen';
 import EndGameScreen from '../screens/EndGameScreen';
 
+
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
