@@ -55,14 +55,15 @@ export default function GameBoardScreen({ route, navigation }) {
   const { width } = Dimensions.get("window");
   const squareSize = 38;
 
-  const DiceFace = ({ number = 1}) => {
+  const DiceFace = ({ number = 1 }) => {
     const renderDots = (number) => {
       const validNumber = number && number >= 1 && number <= 6 ? number : 1;
       const dotPositions = {
-        1: [{ top: "40%", left: "40%" }],
+        1: [{ top: "200%", left: "40%" }],
         2: [
-          { top: "20%", left: "20%" },
-          { top: "60%", left: "60%" },
+          { top: "100%", left: "20%" },
+          { top: "50%", left: "60%" },
+
         ],
         3: [
           { top: "15%", left: "20%" },
@@ -70,25 +71,25 @@ export default function GameBoardScreen({ route, navigation }) {
           { top: "70%", left: "70%" },
         ],
         4: [
-          { top: "20%", left: "20%" },
+          { top: "20%", left: "10%" },
+          { top: "-5%", left: "70%" },
+          { top: "40%", left: "10%" },
           { top: "20%", left: "70%" },
-          { top: "70%", left: "20%" },
-          { top: "70%", left: "70%" },
         ],
         5: [
           { top: "10%", left: "10%" },
-          { top: "10%", left: "70%" },
-          { top: "40%", left: "40%" },
-          { top: "70%", left: "10%" },
-          { top: "70%", left: "70%" },
+          { top: "-5%", left: "70%" },
+          { top: "2%", left: "40%" },
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "70%" },
         ],
         6: [
-          { top: "20%", left: "10%" },
-          { top: "20%", left: "40%" },
-          { top: "20%", left: "70%" },
-          { top: "70%", left: "10%" },
-          { top: "70%", left: "40%" },
-          { top: "70%", left: "70%" },
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "40%" },
+          { top: "-20%", left: "70%" },
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "40%" },
+          { top: "-20%", left: "70%" },
         ],
       };
       // if (!dotPositions[number]) {
@@ -380,30 +381,13 @@ export default function GameBoardScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.gradientBackground}>
       <Text style={styles.title}>Truth or Dare</Text>
-      <View style={styles.playerInfo}>
-        <Image
-          source={playerIcons[currentPlayerIndex]}
-          style={styles.currentPlayerIcon}
-        />
-        <View>
-          <Text style={styles.currentPlayerName}>
-            {players[currentPlayerIndex].name}
-          </Text>
-          <Text>Position: {playerPositions[currentPlayerIndex]}</Text>
-        </View>
-      </View>
-      <View style={styles.diceResultContainer}>
-        <Text style={styles.diceResultText}>
-          {diceRoll !== null ? `You rolled: ${diceRoll}` : "Roll the dice!"}
-        </Text>
-      </View>
-
       <View style={[styles.board, { width: width - 10 }]}>
         {[...Array(boardSize)].map((_, i) => (
           <View
             key={i}
-            style={[styles.square, { width: squareSize, height: squareSize }]}
+            style={[styles.square, { width: squareSize, height: squareSize, backgroundColor: i % 2 === 0 ? '#f0f4f8' : '#e2e8f0' }]}
           >
             <Text style={styles.squareNumber}>
               {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
@@ -423,29 +407,66 @@ export default function GameBoardScreen({ route, navigation }) {
             )}
           </View>
         ))}
+        </View>
       </View>
-      <View style={styles.diceContainer}>
-        {/* Dice container with animation */}
-        <TouchableOpacity
-          onPress={rollDice}
-          disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
-        >
-          <Animated.View
-            style={[styles.dice, { transform: [{ rotate: rotation }] }]}
+
+      <View style={styles.bottomContainer}>
+        <View style={styles.playerTurnContainer}>
+          <View style={styles.playerCard}>
+            <Image
+              source={playerIcons[currentPlayerIndex]}
+              style={styles.playerCardIcon}
+            />
+            <View style={styles.playerCardInfo}>
+              <Text style={styles.playerCardName}>
+                {players[currentPlayerIndex].name}
+              </Text>
+              {/* <Text style={styles.playerCardPosition}>
+                Position: {playerPositions[currentPlayerIndex]}
+              </Text> */}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={rollDice}
+            disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
+            style={styles.diceWrapper}
           >
-            <DiceFace number={diceRoll} />
-          </Animated.View>
-        </TouchableOpacity>
+            <Animated.View
+              style={[
+                styles.dice,
+                {
+                  transform: [{ rotate: rotation }],
+                  opacity:
+                    isRolling || finishedPlayers.includes(currentPlayerIndex)
+                      ? 0.5
+                      : 1,
+                },
+              ]}
+            >
+              <DiceFace number={diceRoll} />
+            </Animated.View>
+            <Text style={styles.rollText}>
+              {isRolling ? "Rolling..." : "Tap to Roll"}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.nextPlayerPreview}>
+            <View style={styles.nextPlayerInfo}>
+              <Image
+                source={playerIcons[(currentPlayerIndex + 1) % players.length]}
+                style={styles.nextPlayerIcon}
+              />
+              <View>
+                <Text style={styles.nextPlayerLabel}>Next Player</Text>
+                <Text style={styles.nextPlayerName}>
+                  {players[(currentPlayerIndex + 1) % players.length].name}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
       </View>
-      {/* <TouchableOpacity 
-        style={styles.button} 
-        onPress={rollDice} 
-        disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
-      >
-        <Animated.View style={{ transform: [{ rotate: diceTransform }] }}>
-          <Text style={styles.buttonText}>🎲 Roll Dice</Text>
-        </Animated.View>
-      </TouchableOpacity> */}
 
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -626,14 +647,19 @@ export default function GameBoardScreen({ route, navigation }) {
     </View>
   );
 }
-
+//sadhasdha
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF",
-    padding: 0,
+    backgroundColor: '#1a365d',
+  },
+  gradientBackground: {
+    flex: 1,
+    backgroundColor: '#2a4365',
+    paddingTop: 20,
+    alignItems: 'center',
   },
   imgcontainer: {
     flex: 1, // Take up the full screen
@@ -661,10 +687,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
+    marginTop: 100,
+    marginBottom: 0,
+    //marginBottom: 20,
+    color: "#fff",
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   playerInfo: {
     flexDirection: "row",
@@ -694,25 +724,28 @@ const styles = StyleSheet.create({
   board: {
     flexWrap: "wrap",
     flexDirection: "row",
-    marginBottom: 20,
+    marginTop:'10%',
+    // marginBottom: 40,
     borderColor: "#ddd",
-    borderRadius: 2,
+    backgroundColor: '#fff',
+    borderRadius: 5,
     overflow: "hidden",
+    padding: 1,
   },
   square: {
     justifyContent: "center",
     alignItems: "center",
     margin: 0,
     backgroundColor: "#f0f0f0",
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: "#ddd",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#cbd5e0",
   },
   squareNumber: {
     position: "absolute",
     top: 5,
     fontSize: 12,
-    color: "#333",
+    color: "#4a5568",
   },
   playerIcon: {
     width: 30,
@@ -732,6 +765,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
+    marginBottom:160,
   },
   buttonText: {
     color: "#FFF",
@@ -739,12 +773,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
   },
-  // modalOverlay: {
-  //   flex: 1,
-  //   backgroundColor: 'rgba(0,0,0,0.5)',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
@@ -884,52 +912,133 @@ const styles = StyleSheet.create({
     color: "#6c757d",
     marginTop: 5,
   },
-  diceContainer:{
+  bottomContainer: {
     position: 'absolute',
-    bottom: 50,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  rollDice: {
-    height: 150,
-    width: 150,
-    //marginBottom: 20,
-  },
-  dice: {
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderWidth: 2,
-    borderColor: '#333',
-    borderRadius: 12,
-    elevation: 5,
+    bottom: 0,
+    display:'flex',
+    flexDirection: 'row',
+    backgroundColor: '#2d3748',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2
+      height: -3,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84
+    shadowRadius: 5,
+    elevation: 5,
   },
-  face: {
-    position: 'absolute',
+  playerTurnContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
+    paddingHorizontal: 10,
+  },
+  playerCard: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: '#3c4d63',
+    padding: 10,
+    borderRadius: 20,
+    width: '30%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  playerCardIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: '#90cdf4',
+  },
+  playerCardInfo: {
+    alignItems: 'center',
+  },
+  playerCardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  playerCardPosition: {
+    fontSize: 12,
+    color: '#a0aec0',
+    textAlign: 'center',
+  },
+  diceWrapper: {
+    alignItems: 'center',
+    width: '30%',
+    backgroundColor: '#3c4d63',
+    padding: 12,
+    borderRadius: 20,
+  },
+  dice: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#90cdf4',
+    borderRadius: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    marginBottom: 8,
+  },
+  rollText: {
+    fontSize: 14,
+    color: '#a0aec0',
+    marginTop: 4,
+  },
+  nextPlayerPreview: {
+    width: '30%',
+    alignItems: 'center',
+  },
+  nextPlayerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3c4d63',
+    padding: 10,
+    borderRadius: 15,
+  },
+  nextPlayerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 2,
+    borderColor: '#90cdf4',
+  },
+  nextPlayerLabel: {
+    fontSize: 12,
+    color: '#a0aec0',
+    marginBottom: 2,
+  },
+  nextPlayerName: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '500',
   },
   dot: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#333',
+    width: 12,
+    height: 12,
+    backgroundColor: '#4299e1',
     borderRadius: 6,
-    position: 'absolute'
-  },
-  message: {
-    fontSize: 20,
-    color: "blue",
+    //position: 'absolute',
   },
 });
