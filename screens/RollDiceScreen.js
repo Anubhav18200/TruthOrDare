@@ -36,10 +36,10 @@ const DiceFace = ({ number }) => {
         { top: '80%', left: '80%' },
       ],
     };
-
-    return dotPositions[number].map((position, index) => (
-      <View key={index} style={[styles.dot, position]} />
-    ));
+    
+      return dotPositions[number]?.map((position, index) => (
+        <View key={index} style={[styles.dot, position]} />
+      ));
   };
 
   return <View style={styles.face}>{renderDots(number)}</View>;
