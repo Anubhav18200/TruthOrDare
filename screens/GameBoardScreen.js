@@ -63,7 +63,6 @@ export default function GameBoardScreen({ route, navigation }) {
         2: [
           { top: "100%", left: "20%" },
           { top: "50%", left: "60%" },
-
         ],
         3: [
           { top: "15%", left: "20%" },
@@ -96,7 +95,7 @@ export default function GameBoardScreen({ route, navigation }) {
       //   // In case the number is invalid, return an empty array (this prevents errors)
       //   return [];
       // }
-      console.log(validNumber);
+    //  console.log(validNumber);
       return dotPositions[validNumber].map((position, index) => (
         <View key={index} style={[styles.dot, position]} />
       ));
@@ -275,7 +274,7 @@ export default function GameBoardScreen({ route, navigation }) {
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
     // Select a random category (Ghost, Exercise, etc.)
-    console.log(tasks[environment][type]);
+    //console.log(tasks[environment][type]);
     const categories = Object.keys(tasks[environment][type]);
     const randomCategory =
       categories[Math.floor(Math.random() * categories.length)];
@@ -382,31 +381,38 @@ export default function GameBoardScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.gradientBackground}>
-      <Text style={styles.title}>Truth or Dare</Text>
-      <View style={[styles.board, { width: width - 10 }]}>
-        {[...Array(boardSize)].map((_, i) => (
-          <View
-            key={i}
-            style={[styles.square, { width: squareSize, height: squareSize, backgroundColor: i % 2 === 0 ? '#f0f4f8' : '#e2e8f0' }]}
-          >
-            <Text style={styles.squareNumber}>
-              {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
-            </Text>
-            {playerPositions.map(
-              (pos, index) =>
-                pos === i + 1 && (
-                  <Image
-                    key={index}
-                    source={playerIcons[index]}
-                    style={styles.playerIcon}
-                  />
-                )
-            )}
-            {randomGiftPositions.includes(i + 1) && (
-              <Image source={giftIcon} style={styles.giftIcon} />
-            )}
-          </View>
-        ))}
+        <Text style={styles.title}>Truth or Dare</Text>
+        <View style={[styles.board, { width: width - 10 }]}>
+          {[...Array(boardSize)].map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.square,
+                {
+                  width: squareSize,
+                  height: squareSize,
+                  backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
+                },
+              ]}
+            >
+              <Text style={styles.squareNumber}>
+                {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
+              </Text>
+              {playerPositions.map(
+                (pos, index) =>
+                  pos === i + 1 && (
+                    <Image
+                      key={index}
+                      source={playerIcons[index]}
+                      style={styles.playerIcon}
+                    />
+                  )
+              )}
+              {randomGiftPositions.includes(i + 1) && (
+                <Image source={giftIcon} style={styles.giftIcon} />
+              )}
+            </View>
+          ))}
         </View>
       </View>
 
@@ -653,13 +659,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: '#1a365d',
+    backgroundColor: "#1a365d",
   },
   gradientBackground: {
     flex: 1,
-    backgroundColor: '#2a4365',
+    backgroundColor: "#2a4365",
     paddingTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   imgcontainer: {
     flex: 1, // Take up the full screen
@@ -693,7 +699,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     //marginBottom: 20,
     color: "#fff",
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   playerInfo: {
@@ -724,10 +730,10 @@ const styles = StyleSheet.create({
   board: {
     flexWrap: "wrap",
     flexDirection: "row",
-    marginTop:'10%',
+    marginTop: "10%",
     // marginBottom: 40,
     borderColor: "#ddd",
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 5,
     overflow: "hidden",
     padding: 1,
@@ -765,7 +771,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
-    marginBottom:160,
+    marginBottom: 160,
   },
   buttonText: {
     color: "#FFF",
@@ -913,15 +919,15 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottomContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
-    display:'flex',
-    flexDirection: 'row',
-    backgroundColor: '#2d3748',
+    display: "flex",
+    flexDirection: "row",
+    backgroundColor: "#2d3748",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: -3,
@@ -931,20 +937,20 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   playerTurnContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
     paddingHorizontal: 10,
   },
   playerCard: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: '#3c4d63',
+    flexDirection: "column",
+    alignItems: "center",
+    backgroundColor: "#3c4d63",
     padding: 10,
     borderRadius: 20,
-    width: '30%',
-    shadowColor: '#000',
+    width: "30%",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -959,39 +965,39 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: '#90cdf4',
+    borderColor: "#90cdf4",
   },
   playerCardInfo: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   playerCardName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
-    textAlign: 'center',
+    textAlign: "center",
   },
   playerCardPosition: {
     fontSize: 12,
-    color: '#a0aec0',
-    textAlign: 'center',
+    color: "#a0aec0",
+    textAlign: "center",
   },
   diceWrapper: {
-    alignItems: 'center',
-    width: '30%',
-    backgroundColor: '#3c4d63',
+    alignItems: "center",
+    width: "30%",
+    backgroundColor: "#3c4d63",
     padding: 12,
     borderRadius: 20,
   },
   dice: {
     width: 70,
     height: 70,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 2,
-    borderColor: '#90cdf4',
+    borderColor: "#90cdf4",
     borderRadius: 16,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -1002,17 +1008,17 @@ const styles = StyleSheet.create({
   },
   rollText: {
     fontSize: 14,
-    color: '#a0aec0',
+    color: "#a0aec0",
     marginTop: 4,
   },
   nextPlayerPreview: {
-    width: '30%',
-    alignItems: 'center',
+    width: "30%",
+    alignItems: "center",
   },
   nextPlayerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#3c4d63',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3c4d63",
     padding: 10,
     borderRadius: 15,
   },
@@ -1022,22 +1028,22 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 2,
-    borderColor: '#90cdf4',
+    borderColor: "#90cdf4",
   },
   nextPlayerLabel: {
     fontSize: 12,
-    color: '#a0aec0',
+    color: "#a0aec0",
     marginBottom: 2,
   },
   nextPlayerName: {
     fontSize: 14,
-    color: '#fff',
-    fontWeight: '500',
+    color: "#fff",
+    fontWeight: "500",
   },
   dot: {
     width: 12,
     height: 12,
-    backgroundColor: '#4299e1',
+    backgroundColor: "#4299e1",
     borderRadius: 6,
     //position: 'absolute',
   },

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Animated
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function AddPlayersScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
@@ -145,9 +145,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     marginBottom: 20,
+    width: '100%',
   },
   input: {
-    flex: 1,
+    width: width - 100,
     height: 50,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 25,
@@ -157,6 +158,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   addButton: {
+    width: width - 100 ,
     width: 50,
     height: 50,
     backgroundColor: '#4CAF50',

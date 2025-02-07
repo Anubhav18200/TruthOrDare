@@ -14,7 +14,6 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.subtitle}>Are you brave enough to face the unexpected?</Text>
       </View>
 
-      <View style={styles.bottomSection}>
         <TouchableOpacity 
           style={styles.button}
           activeOpacity={0.8}
@@ -23,21 +22,14 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.buttonText}>Play</Text>
           <Text style={styles.buttonSubtext}>If you dare...</Text>
         </TouchableOpacity>
-
-        <View style={styles.decorationContainer}>
-          <View style={[styles.decorationDot, { backgroundColor: '#FF4081' }]} />
-          <View style={[styles.decorationDot, { backgroundColor: '#FF80AB' }]} />
-          <View style={[styles.decorationDot, { backgroundColor: '#FF1744' }]} />
-        </View>
       </View>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fde8e8',
+    backgroundColor: 'rgb(29, 185, 177)',  // Updated to a more accurate teal color
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 40
@@ -55,29 +47,13 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginBottom: 10
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FF4081',
-    textAlign: 'center',
-    marginBottom: 12,
-    textShadowColor: 'rgba(255, 64, 129, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4
-  },
   subtitle: {
     fontSize: 22,
-    color: 'blue',
+    color: 'white',
     textAlign: 'center',
     marginBottom: 20,
     fontStyle: 'italic',
     letterSpacing: 0.5
-  },
-  bottomSection: {
-    width: '100%',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 20
   },
   button: {
     backgroundColor: '#FF1744',
@@ -93,7 +69,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
     borderWidth: 2,
     borderColor: '#FF4081'
   },
@@ -107,7 +83,6 @@ const styles = StyleSheet.create({
   },
   buttonSubtext: {
     color: '#FFFFFF',
-    left: 4,
     fontSize: 16,
     fontStyle: 'italic',
     opacity: 0.9
@@ -115,7 +90,6 @@ const styles = StyleSheet.create({
   decorationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20
   },
   decorationDot: {
     width: 8,
