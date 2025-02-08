@@ -980,10 +980,7 @@ const styles = StyleSheet.create({
   playerCardIcon: {
     width: 30,
     height: 50,
-    // borderRadius: 25,
     marginBottom: 8,
-    // borderWidth: 2,
-    //borderColor: "#90cdf4",
   },
   playerCardInfo: {
     alignItems: "center",
@@ -1053,11 +1050,7 @@ const styles = StyleSheet.create({
   nextPlayerIcon: {
     width: 40,
     height: 50,
-    //borderRadius: 25,
     marginBottom: 8,
-    //borderWidth: 2,
-    //borderColor: "#90cdf4",
-    // textAlign:'center',
   },
   nextPlayerLabel: {
     fontSize: 12,
