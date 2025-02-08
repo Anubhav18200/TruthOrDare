@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   highlightPlayer: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#FFFFFF',
     opacity: 0.8,
   },

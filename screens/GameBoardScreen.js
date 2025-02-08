@@ -9,8 +9,7 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
-import { tasks } from "../Data/tasksData";
-// import RollDiceScreen from "../screens/RollDiceScreen";
+import { tasks } from "../Data/tasksData.js";
 
 const playerIcons = [
   require("../assets/beer2.png"),
@@ -33,6 +32,7 @@ export default function GameBoardScreen({ route, navigation }) {
   );
   const [diceRoll, setDiceRoll] = useState(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
   const [showTruthDareModal, setShowTruthDareModal] = useState(false);
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -47,13 +47,24 @@ export default function GameBoardScreen({ route, navigation }) {
   const [selectedCategoryImage, setSelectedCategoryImage] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showCategoryImage, setShowCategoryImage] = useState(false);
-  const [opacity] = useState(new Animated.Value(0)); // Start with opacity 0
-  const [scale] = useState(new Animated.Value(0.8)); // Start with smaller scale
+  const [opacity] = useState(new Animated.Value(0));
+  const [scale] = useState(new Animated.Value(0.8));
   const [rotateAnimation] = useState(new Animated.Value(0));
+  const [pulseAnimation] = useState(new Animated.Value(1));
   const boardSize = 100;
-  // const [diceAnimationValue] = useState(new Animated.Value(0));
   const { width } = Dimensions.get("window");
   const squareSize = 38;
+
+  const generateRandomGiftPositions = () => {
+    const giftPositions = new Set();
+    while (giftPositions.size < 20) {
+      const randomPosition = Math.floor(Math.random() * (boardSize - 2)) + 2;
+      giftPositions.add(randomPosition);
+    }
+    return Array.from(giftPositions);
+  };
+
+  const [randomGiftPositions] = useState(generateRandomGiftPositions());
 
   const DiceFace = ({ number = 1 }) => {
     const renderDots = (number) => {
@@ -91,11 +102,6 @@ export default function GameBoardScreen({ route, navigation }) {
           { top: "-20%", left: "70%" },
         ],
       };
-      // if (!dotPositions[number]) {
-      //   // In case the number is invalid, return an empty array (this prevents errors)
-      //   return [];
-      // }
-    //  console.log(validNumber);
       return dotPositions[validNumber].map((position, index) => (
         <View key={index} style={[styles.dot, position]} />
       ));
@@ -104,43 +110,48 @@ export default function GameBoardScreen({ route, navigation }) {
     return <View style={styles.face}>{renderDots(number)}</View>;
   };
 
-  const generateRandomGiftPositions = () => {
-    const giftPositions = new Set();
-    while (giftPositions.size < 20) {
-      const randomPosition = Math.floor(Math.random() * (boardSize - 2)) + 2;
-      giftPositions.add(randomPosition);
-    }
-    return Array.from(giftPositions);
-  };
-
-  const [randomGiftPositions] = useState(generateRandomGiftPositions());
+  // Add pulse animation effect
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnimation, {
+          toValue: 0.9,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [currentPlayerIndex]);
 
   useEffect(() => {
     if (showCategoryImage) {
-      // Animate opacity and scale when the image is shown
       Animated.parallel([
         Animated.timing(opacity, {
-          toValue: 1, // Fade in
-          duration: 1000, // Duration of the fade effect
+          toValue: 1,
+          duration: 1000,
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
-          toValue: 1, // Scale to normal size
-          duration: 1000, // Duration of the scale effect
+          toValue: 1,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ]).start();
     } else {
-      // Reset opacity and scale when the image is hidden
       Animated.parallel([
         Animated.timing(opacity, {
-          toValue: 0, // Fade out
-          duration: 1000, // Duration of the fade effect
+          toValue: 0,
+          duration: 1000,
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
-          toValue: 0.8, // Scale back down
-          duration: 1000, // Duration of the scale effect
+          toValue: 0.8,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ]).start();
@@ -157,6 +168,43 @@ export default function GameBoardScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [showTaskModal, timer, showCategoryImage]);
 
+  const animatePlayerMovement = (startPos, endPos, isReward = false) => {
+    setIsMoving(true);
+    let currentPosition = startPos;
+    const direction = endPos > startPos ? 1 : -1;
+
+    const moveOneStep = () => {
+      if (
+        (direction === 1 && currentPosition < endPos) ||
+        (direction === -1 && currentPosition > endPos)
+      ) {
+        currentPosition += direction;
+        const newPositions = [...playerPositions];
+        newPositions[currentPlayerIndex] = currentPosition;
+        setPlayerPositions(newPositions);
+
+        setTimeout(moveOneStep, 400);
+      } else {
+        setIsMoving(false);
+        checkGameStatus([...playerPositions]);
+
+        if (randomGiftPositions.includes(endPos) && !isReward) {
+          const randomChoice = Math.floor(Math.random() * 2);
+          setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
+          setShowRewardPenaltyModal(true);
+        } else {
+          const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+          if (nextPlayer !== -1) {
+            setCurrentPlayerIndex(nextPlayer);
+          }
+          setIsRolling(false);
+        }
+      }
+    };
+
+    moveOneStep();
+  };
+
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
 
@@ -166,7 +214,7 @@ export default function GameBoardScreen({ route, navigation }) {
     ) {
       newFinishedPlayers.push(currentPlayerIndex);
       setFinishedPlayers(newFinishedPlayers);
-      newPositions[currentPlayerIndex] = 100; // Ensure position stays at 100
+      newPositions[currentPlayerIndex] = 100;
     }
 
     if (newFinishedPlayers.length === players.length) {
@@ -190,11 +238,7 @@ export default function GameBoardScreen({ route, navigation }) {
   };
 
   const rollDice = () => {
-    if (finishedPlayers.includes(currentPlayerIndex)) {
-      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-      if (nextPlayer !== -1) {
-        setCurrentPlayerIndex(nextPlayer);
-      }
+    if (isMoving || finishedPlayers.includes(currentPlayerIndex)) {
       return;
     }
 
@@ -203,7 +247,6 @@ export default function GameBoardScreen({ route, navigation }) {
     setDiceRoll(roll);
 
     Animated.sequence([
-      // Spin to simulate roll/revolve effect
       Animated.timing(rotateAnimation, {
         toValue: 1,
         duration: 500,
@@ -214,36 +257,12 @@ export default function GameBoardScreen({ route, navigation }) {
         duration: 500,
         useNativeDriver: true,
       }),
-    ]).start();
-
-    const newPositions = [...playerPositions];
-    const newPosition = Math.min(newPositions[currentPlayerIndex] + roll, 100);
-    newPositions[currentPlayerIndex] = newPosition;
-    setPlayerPositions(newPositions);
-
-    if (randomGiftPositions.includes(newPosition)) {
-      const randomChoice = Math.floor(Math.random() * 2);
-      if (randomChoice === 0) {
-        setRewardPenaltyGif(rewardGif);
-      } else {
-        setRewardPenaltyGif(penaltyGif);
-      }
-      setShowRewardPenaltyModal(true);
-    } else {
-      setIsRolling(false);
-      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-      if (nextPlayer !== -1) {
-        setCurrentPlayerIndex(nextPlayer);
-      }
-    }
-
-    checkGameStatus(newPositions);
+    ]).start(() => {
+      const startPos = playerPositions[currentPlayerIndex];
+      const endPos = Math.min(startPos + roll, 100);
+      animatePlayerMovement(startPos, endPos);
+    });
   };
-
-  const rotation = rotateAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
 
   const getRewardMovement = (difficulty) => {
     switch (difficulty) {
@@ -273,24 +292,13 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
-    // Select a random category (Ghost, Exercise, etc.)
-    //console.log(tasks[environment][type]);
     const categories = Object.keys(tasks[environment][type]);
     const randomCategory =
       categories[Math.floor(Math.random() * categories.length)];
-    if (randomCategory === "Ghost") {
-      setSelectedCategoryImage(ghostImg);
-    } else {
-      setSelectedCategoryImage(exerImg);
-    }
 
-    // Retrieve category information (image and tasks)
+    setSelectedCategoryImage(randomCategory === "Ghost" ? ghostImg : exerImg);
+
     const selectedCategoryData = tasks[environment][type][randomCategory];
-
-    // Set the random category image
-    //setSelectedCategoryImage(selectedCategoryData.image);
-
-    // Get the random task based on the selected category and difficulty levels
     const selectedTasks = {
       Easy: getRandomTask(selectedCategoryData.Easy),
       Medium: getRandomTask(selectedCategoryData.Medium),
@@ -298,45 +306,37 @@ export default function GameBoardScreen({ route, navigation }) {
     };
 
     setRandomTasks(selectedTasks);
-    setSelectedCategory(randomCategory); // Store the selected category
-
+    setSelectedCategory(randomCategory);
     setShowTruthDareModal(false);
     setShowDifficultyModal(true);
   };
 
-  // const getRandomCategoryImage = (category) => {
-  //   const images = categoryImages[category];
-  //   const randomIndex = Math.floor(Math.random() * images.length);
-  //   return images[randomIndex];
-  // };
-
   const getRandomTask = (tasksArray) => {
-    const randomIndex = Math.floor(Math.random() * tasksArray.length);
-    return tasksArray[randomIndex];
+    return tasksArray[Math.floor(Math.random() * tasksArray.length)];
   };
 
-  // Helper function to handle difficulty selection
   const handleDifficultySelection = (difficulty) => {
     setCurrentTask({
       type: selectedType,
       difficulty,
       task: randomTasks[difficulty],
-      category: selectedCategory, // Add selected category to the task object
+      category: selectedCategory,
     });
 
     setShowDifficultyModal(false);
-    // Hide the image after 3-4 seconds
     setShowCategoryImage(true);
     setTimeout(() => {
-      setShowCategoryImage(false); // Hide the category image
-      setShowTaskModal(true); // Show the task modal
-      setTimer(120); // Start the timer for the task
-    }, 4000); // Show for 4 seconds
+      setShowCategoryImage(false);
+      setShowTaskModal(true);
+      setTimer(120);
+    }, 4000);
   };
 
   const handleTaskCompletion = (completed) => {
+    const currentPos = playerPositions[currentPlayerIndex];
     let move = 0;
-    if (rewardPenaltyGif) {
+
+    if (currentTask) {
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
 
@@ -345,26 +345,15 @@ export default function GameBoardScreen({ route, navigation }) {
       } else {
         move = -getPenaltyMovement(difficulty);
       }
+
+      const newPosition = Math.max(1, Math.min(currentPos + move, 100));
+
+      setShowTaskModal(false);
+      setShowRewardPenaltyModal(false);
+      setTimer(120);
+
+      animatePlayerMovement(currentPos, newPosition, true);
     }
-
-    const newPositions = [...playerPositions];
-    let newPosition = playerPositions[currentPlayerIndex] + move;
-
-    if (newPosition < 1) newPosition = 1;
-    if (newPosition > boardSize) newPosition = 100;
-
-    newPositions[currentPlayerIndex] = newPosition;
-    setPlayerPositions(newPositions);
-    checkGameStatus(newPositions);
-
-    setShowTaskModal(false);
-    setShowRewardPenaltyModal(false);
-    const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-    if (nextPlayer !== -1) {
-      setCurrentPlayerIndex(nextPlayer);
-    }
-    setTimer(120);
-    setIsRolling(false);
   };
 
   const formatTime = (seconds) => {
@@ -373,10 +362,10 @@ export default function GameBoardScreen({ route, navigation }) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // const diceTransform = diceAnimationValue.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: ["0deg", "360deg"],
-  // });
+  const rotation = rotateAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   return (
     <View style={styles.container}>
@@ -418,7 +407,19 @@ export default function GameBoardScreen({ route, navigation }) {
 
       <View style={styles.bottomContainer}>
         <View style={styles.playerTurnContainer}>
-          <View style={styles.playerCard}>
+          <Animated.View
+            style={[
+              styles.playerCard,
+              {
+                transform: [{ scale: pulseAnimation }],
+                borderWidth: 2,
+                borderColor: "#4299e1",
+              },
+            ]}
+          >
+            <View style={styles.yourTurnBadge}>
+              <Text style={styles.yourTurnText}>Your Turn </Text>
+            </View>
             <Image
               source={playerIcons[currentPlayerIndex]}
               style={styles.playerCardIcon}
@@ -427,15 +428,16 @@ export default function GameBoardScreen({ route, navigation }) {
               <Text style={styles.playerCardName}>
                 {players[currentPlayerIndex].name}
               </Text>
-              {/* <Text style={styles.playerCardPosition}>
-                Position: {playerPositions[currentPlayerIndex]}
-              </Text> */}
             </View>
-          </View>
+          </Animated.View>
 
           <TouchableOpacity
             onPress={rollDice}
-            disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
+            disabled={
+              isRolling ||
+              isMoving ||
+              finishedPlayers.includes(currentPlayerIndex)
+            }
             style={styles.diceWrapper}
           >
             <Animated.View
@@ -444,7 +446,9 @@ export default function GameBoardScreen({ route, navigation }) {
                 {
                   transform: [{ rotate: rotation }],
                   opacity:
-                    isRolling || finishedPlayers.includes(currentPlayerIndex)
+                    isRolling ||
+                    isMoving ||
+                    finishedPlayers.includes(currentPlayerIndex)
                       ? 0.5
                       : 1,
                 },
@@ -453,18 +457,22 @@ export default function GameBoardScreen({ route, navigation }) {
               <DiceFace number={diceRoll} />
             </Animated.View>
             <Text style={styles.rollText}>
-              {isRolling ? "Rolling..." : "Tap to Roll"}
+              {isRolling
+                ? "Rolling..."
+                : isMoving
+                ? "Moving..."
+                : "Tap to Roll"}
             </Text>
           </TouchableOpacity>
 
           <View style={styles.nextPlayerPreview}>
             <View style={styles.nextPlayerInfo}>
+            <Text style={styles.nextPlayerLabel}>Next Player</Text>
               <Image
                 source={playerIcons[(currentPlayerIndex + 1) % players.length]}
                 style={styles.nextPlayerIcon}
               />
               <View>
-                <Text style={styles.nextPlayerLabel}>Next Player</Text>
                 <Text style={styles.nextPlayerName}>
                   {players[(currentPlayerIndex + 1) % players.length].name}
                 </Text>
@@ -474,37 +482,7 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </View>
 
-      <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {rewardPenaltyGif === rewardGif ? "Reward!" : "Penalty!"}
-              </Text>
-            </View>
-            <Image
-              source={rewardPenaltyGif}
-              style={styles.rewardPenaltyImage}
-            />
-            <TouchableOpacity
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor:
-                    rewardPenaltyGif === rewardGif ? "#4CAF50" : "#F44336",
-                },
-              ]}
-              onPress={() => {
-                setShowRewardPenaltyModal(false);
-                setShowTruthDareModal(true);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Continue</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
+      {/* Truth/Dare Modal */}
       <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -530,6 +508,7 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      {/* Difficulty Modal */}
       <Modal visible={showDifficultyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -554,7 +533,6 @@ export default function GameBoardScreen({ route, navigation }) {
                       style={[styles.difficultyOption, difficultyStyle]}
                     >
                       <Text style={styles.difficultyTitle}>{difficulty}</Text>
-                      {/* <Text style={styles.taskText}>{task}</Text> */}
                       <TouchableOpacity
                         style={[
                           styles.modalButton,
@@ -580,14 +558,15 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      {/* Category Image */}
       <View style={styles.imgcontainer}>
         {showCategoryImage && (
           <Animated.View
             style={[
               styles.imageContainer,
               {
-                opacity, // Bind opacity to the animated value
-                transform: [{ scale }], // Bind scale to the animated value
+                opacity,
+                transform: [{ scale }],
               },
             ]}
           >
@@ -599,6 +578,7 @@ export default function GameBoardScreen({ route, navigation }) {
         )}
       </View>
 
+      {/* Task Modal */}
       <Modal visible={showTaskModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -635,6 +615,38 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      {/* Reward/Penalty Modal */}
+      <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {rewardPenaltyGif === rewardGif ? "Reward!" : "Penalty!"}
+              </Text>
+            </View>
+            <Image
+              source={rewardPenaltyGif}
+              style={styles.rewardPenaltyImage}
+            />
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                {
+                  backgroundColor:
+                    rewardPenaltyGif === rewardGif ? "#4CAF50" : "#F44336",
+                },
+              ]}
+              onPress={() => {
+                setShowRewardPenaltyModal(false);
+                setShowTruthDareModal(true);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {isGameFinished && (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#4CAF50" }]}
@@ -653,7 +665,7 @@ export default function GameBoardScreen({ route, navigation }) {
     </View>
   );
 }
-//sadhasdha
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -697,7 +709,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 100,
     marginBottom: 0,
-    //marginBottom: 20,
     color: "#fff",
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -712,6 +723,7 @@ const styles = StyleSheet.create({
     height: 50,
     marginRight: 10,
     borderRadius: 25,
+    zIndex: 2,
   },
   currentPlayerName: {
     fontSize: 18,
@@ -731,7 +743,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "row",
     marginTop: "10%",
-    // marginBottom: 40,
     borderColor: "#ddd",
     backgroundColor: "#fff",
     borderRadius: 5,
@@ -759,6 +770,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 5,
     borderRadius: 15,
+    zIndex:2,
   },
   giftIcon: {
     width: 30,
@@ -943,6 +955,10 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 10,
   },
+  yourTurnText:{
+    color:"#a0aec0",
+    marginBottom:7,
+  },
   playerCard: {
     flexDirection: "column",
     alignItems: "center",
@@ -974,7 +990,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 6,
     textAlign: "center",
   },
   playerCardPosition: {
@@ -1012,33 +1028,46 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   nextPlayerPreview: {
-    width: "30%",
-    alignItems: "center",
-  },
-  nextPlayerInfo: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     backgroundColor: "#3c4d63",
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 20,
+    width: "30%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  nextPlayerInfo: {
+    fontSize: 12,
+    color: "#a0aec0",
+    textAlign: "center",
   },
   nextPlayerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 8,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 8,
     borderWidth: 2,
     borderColor: "#90cdf4",
+    textAlign:'center',
   },
   nextPlayerLabel: {
     fontSize: 12,
     color: "#a0aec0",
-    marginBottom: 2,
+    marginBottom: 7,
   },
   nextPlayerName: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: "bold",
     color: "#fff",
-    fontWeight: "500",
+    marginBottom: 4,
+    textAlign: "center",
   },
   dot: {
     width: 12,
