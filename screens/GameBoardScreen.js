@@ -767,10 +767,9 @@ const styles = StyleSheet.create({
     color: "#4a5568",
   },
   playerIcon: {
-    width: 30,
-    height: 30,
+    width: 20,
+    height: 35,
     position: "absolute",
-    top: 5,
     borderRadius: 15,
     zIndex:2,
   },
