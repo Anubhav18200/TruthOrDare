@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import { tasks } from "../Data/tasksData.js";
+import FastImage from 'react-native-fast-image'
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -23,8 +24,8 @@ const playerIcons = [
 const giftIcon = require("../assets/gift.png");
 const rewardGif = require("../assets/gift.png");
 const penaltyGif = require("../assets/beer3.jpg");
-const ghostImg = require("../assets/ghost1.jpg");
-const exerImg = require("../assets/exercise1.jpg");
+const ghostImg = require("../assets/ex1.gif");
+const exerImg = require("../assets/ex1.gif");
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
@@ -620,11 +621,11 @@ export default function GameBoardScreen({ route, navigation }) {
       {/* Reward/Penalty Modal */}
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              {/* <Text style={styles.modalTitle}>
                 {rewardPenaltyGif === rewardGif ? "Reward!" : "Penalty!"}
-              </Text>
+              </Text> */}
             </View>
             <Image
               source={rewardPenaltyGif}

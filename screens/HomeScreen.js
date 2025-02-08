@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
-
 const { width } = Dimensions.get('window');
+const giftIcon = require("../assets/ex1.gif");
+import { WebView } from 'react-native-webview';
 
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.topSection}>
-        <Image 
-          source={require('../assets/logo.png')} 
+        <WebView 
+          source={require('../assets/ex1.gif')} 
           style={styles.logo}
         />
         <Text style={styles.subtitle}>Are you brave enough to face the unexpected?</Text>
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     width: width * 1,
     height: width * 0.8,
     resizeMode: 'contain',
-    marginBottom: 10
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 22,
