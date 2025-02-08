@@ -12,10 +12,12 @@ import {
 import { tasks } from "../Data/tasksData.js";
 
 const playerIcons = [
-  require("../assets/beer2.png"),
-  require("../assets/beer2.png"),
-  require("../assets/beer3.jpg"),
-  require("../assets/beer3.jpg"),
+  require("../assets/p1.png"),
+  require("../assets/p2.png"),
+  require("../assets/p3.png"),
+  require("../assets/p4.png"),
+  require("../assets/p5.png"),
+  require("../assets/p6.png"),
 ];
 
 const giftIcon = require("../assets/gift.png");
@@ -976,12 +978,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   playerCardIcon: {
-    width: 50,
+    width: 30,
     height: 50,
-    borderRadius: 25,
+    // borderRadius: 25,
     marginBottom: 8,
-    borderWidth: 2,
-    borderColor: "#90cdf4",
+    // borderWidth: 2,
+    //borderColor: "#90cdf4",
   },
   playerCardInfo: {
     alignItems: "center",
@@ -1046,16 +1048,16 @@ const styles = StyleSheet.create({
   nextPlayerInfo: {
     fontSize: 12,
     color: "#a0aec0",
-    textAlign: "center",
+    alignItems:'center',
   },
   nextPlayerIcon: {
-    width: 50,
+    width: 40,
     height: 50,
-    borderRadius: 25,
+    //borderRadius: 25,
     marginBottom: 8,
-    borderWidth: 2,
-    borderColor: "#90cdf4",
-    textAlign:'center',
+    //borderWidth: 2,
+    //borderColor: "#90cdf4",
+    // textAlign:'center',
   },
   nextPlayerLabel: {
     fontSize: 12,
