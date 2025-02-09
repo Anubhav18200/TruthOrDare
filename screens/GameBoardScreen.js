@@ -5,12 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Image,
   Animated,
   Dimensions,
 } from "react-native";
 import { tasks } from "../Data/tasksData.js";
-import FastImage from 'react-native-fast-image'
+import {Image} from 'expo-image'
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -22,8 +21,8 @@ const playerIcons = [
 ];
 
 const giftIcon = require("../assets/gift.png");
-const rewardGif = require("../assets/gift.png");
-const penaltyGif = require("../assets/beer3.jpg");
+const rewardGif = require("../assets/reward.gif");
+const penaltyGif = require("../assets/penalty.gif");
 const ghostImg = require("../assets/ex1.gif");
 const exerImg = require("../assets/ex1.gif");
 
@@ -194,7 +193,12 @@ export default function GameBoardScreen({ route, navigation }) {
         if (randomGiftPositions.includes(endPos) && !isReward) {
           const randomChoice = Math.floor(Math.random() * 2);
           setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
+          console.log(rewardPenaltyGif);
           setShowRewardPenaltyModal(true);
+          setTimeout(() => {
+            setShowRewardPenaltyModal(false);
+            setShowTruthDareModal(true);
+        }, 6000);
         } else {
           const nextPlayer = findNextActivePlayer(currentPlayerIndex);
           if (nextPlayer !== -1) {
@@ -577,7 +581,7 @@ export default function GameBoardScreen({ route, navigation }) {
               source={selectedCategoryImage}
               style={styles.categoryImage}
             />
-          </Animated.View>
+           </Animated.View>
         )}
       </View>
 
@@ -623,15 +627,12 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View>
             <View style={styles.modalHeader}>
-              {/* <Text style={styles.modalTitle}>
-                {rewardPenaltyGif === rewardGif ? "Reward!" : "Penalty!"}
-              </Text> */}
             </View>
             <Image
               source={rewardPenaltyGif}
               style={styles.rewardPenaltyImage}
             />
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.modalButton,
                 {
@@ -645,7 +646,7 @@ export default function GameBoardScreen({ route, navigation }) {
               }}
             >
               <Text style={styles.modalButtonText}>Continue</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </Modal>
@@ -687,10 +688,10 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Center the content vertically
     alignItems: "center", // Center the content horizontally
     position: "absolute", // Position it on top of the game screen
-    top: 0, // Align at the top of the screen
-    left: 0, // Align at the left of the screen
-    width: "100%", // Take full width
-    height: "100%", // Take full height
+    top: '25%', // Align at the top of the screen
+    left: '25%', // Align at the left of the screen
+    width: "50%", // Take full width
+    height: "50%", // Take full height
   },
   imageContainer: {
     justifyContent: "center",
@@ -702,8 +703,8 @@ const styles = StyleSheet.create({
     zIndex: 1000, // Higher z-index to stay on top
   },
   categoryImage: {
-    width: 300, // Adjust the size as needed
-    height: 300, // Adjust the size as needed
+    width: 400, // Adjust the size as needed
+    height: 150, // Adjust the size as needed
     borderRadius: 10,
   },
 
@@ -750,7 +751,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 5,
     overflow: "hidden",
-    padding: 1,
+    padding: 0,
   },
   square: {
     justifyContent: "center",
@@ -885,10 +886,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F44336",
   },
   rewardPenaltyImage: {
-    width: 120,
-    height: 120,
+    width: 320,
+    height: 220,
     marginBottom: 25,
-    borderRadius: 60,
   },
   truthDareContainer: {
     flexDirection: "row",
