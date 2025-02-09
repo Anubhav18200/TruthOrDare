@@ -1,10 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function EndGameScreen({ route, navigation }) {
   const { players } = route.params;
   const sortedPlayers = players.sort((a, b) => a.finalPosition - b.finalPosition);
+  const scaleAnim = new Animated.Value(0);
+  const fadeAnim = new Animated.Value(0);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true
+      })
+    ]).start();
+  }, []);
 
   const findMostDaringPlayer = () => {
     return players.reduce((prev, current) => prev.daringPoints > current.daringPoints ? prev : current).name;
@@ -18,74 +36,88 @@ export default function EndGameScreen({ route, navigation }) {
     console.log("Results shared", players);
   };
 
-  const getMedalColor = (position) => {
+  const getMedalEmoji = (position) => {
     switch (position) {
-      case 1:
-        return '#FFD700'; // Gold
-      case 2:
-        return '#C0C0C0'; // Silver
-      case 3:
-        return '#CD7F32'; // Bronze
-      default:
-        return '#E0E0E0'; // Grey for other positions
+      case 1: return '🥇';
+      case 2: return '🥈';
+      case 3: return '🥉';
+      default: return '🎮';
     }
   };
 
+  const gameHighlights = [
+    { icon: '🌟', title: 'Most Truths', player: sortedPlayers[0].name },
+    { icon: '🎯', title: 'Most Dares Completed', player: findMostDaringPlayer() },
+    { icon: '⚡', title: 'Quickest Decision Maker', player: findFastestRoller() },
+    { icon: '🎭', title: 'Best Performance', player: sortedPlayers[Math.floor(Math.random() * sortedPlayers.length)].name }
+  ];
+
   return (
     <LinearGradient
-      colors={['#4c669f', '#3b5998', '#192f6a']}
+      colors={['#000428', '#004e92']}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.confettiContainer}>
-          <Text style={styles.heading}>🎉 Game Over! 🎉</Text>
-        </View>
+        <Animated.View style={[styles.header, { transform: [{ scale: scaleAnim }] }]}>
+          <Text style={styles.heading}>Game Complete!</Text>
+          <Text style={styles.subheading}>Truth or Dare Champions</Text>
+        </Animated.View>
 
-        <View style={styles.podiumContainer}>
+        <Animated.View style={[styles.podiumContainer, { opacity: fadeAnim }]}>
           {sortedPlayers.slice(0, 3).map((player, index) => (
-            <View 
-              key={player.name} 
+            <LinearGradient
+              key={player.name}
+              colors={index === 0 ? ['#FFD700', '#FFA000'] : 
+                     index === 1 ? ['#C0C0C0', '#9E9E9E'] :
+                     ['#CD7F32', '#8D6E63']}
               style={[
                 styles.podiumStep,
-                { 
-                  height: [120, 150, 90][index],
-                  backgroundColor: getMedalColor(index + 1)
-                }
+                { height: [180, 140, 100][index] }
               ]}
             >
-              <Text style={styles.podiumPosition}>{index + 1}</Text>
+              <Text style={styles.medalEmoji}>{getMedalEmoji(index + 1)}</Text>
               <Text style={styles.podiumName}>{player.name}</Text>
-            </View>
+              <Text style={styles.podiumPosition}>#{index + 1}</Text>
+            </LinearGradient>
           ))}
-        </View>
+        </Animated.View>
 
-        <View style={styles.rankingsCard}>
-          <Text style={styles.cardTitle}>Final Rankings</Text>
-          {sortedPlayers.map((player, index) => (
-            <View key={player.name} style={styles.playerRow}>
-              <View style={[styles.rankBadge, { backgroundColor: getMedalColor(index + 1) }]}>
-                <Text style={styles.rankNumber}>{index + 1}</Text>
+        <View style={styles.statsContainer}>
+          <LinearGradient colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']} style={styles.statsCard}>
+            <Text style={styles.statsTitle}>🏆 Game Achievements</Text>
+            <View style={styles.statRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}>🔥</Text>
+                <Text style={styles.statLabel}>Most Daring</Text>
+                <Text style={styles.statValue}>{findMostDaringPlayer()}</Text>
               </View>
-              <Text style={styles.playerName}>{player.name}</Text>
-              <Text style={styles.playerPosition}>Position {player.finalPosition}</Text>
+              <View style={styles.divider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}>⚡</Text>
+                <Text style={styles.statLabel}>Fastest Player</Text>
+                <Text style={styles.statValue}>{findFastestRoller()}</Text>
+              </View>
             </View>
-          ))}
+          </LinearGradient>
         </View>
 
-        <View style={styles.statsCard}>
-          <Text style={styles.cardTitle}>Game Stats</Text>
-          <View style={styles.statRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statIcon}>🎲</Text>
-              <Text style={styles.statLabel}>Most Daring</Text>
-              <Text style={styles.statValue}>{findMostDaringPlayer()}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statIcon}>⚡</Text>
-              <Text style={styles.statLabel}>Fastest Roller</Text>
-              <Text style={styles.statValue}>{findFastestRoller()}</Text>
-            </View>
-          </View>
+        <View style={styles.highlightsContainer}>
+          <Text style={styles.highlightsTitle}>✨ Game Highlights ✨</Text>
+          {gameHighlights.map((highlight, index) => (
+            <LinearGradient
+              key={index}
+              colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+              style={styles.highlightCard}
+            >
+              <View style={styles.highlightIconContainer}>
+                <Text style={styles.highlightIcon}>{highlight.icon}</Text>
+              </View>
+              <View style={styles.highlightContent}>
+                <Text style={styles.highlightTitle}>{highlight.title}</Text>
+                <Text style={styles.highlightPlayer}>{highlight.player}</Text>
+              </View>
+            </LinearGradient>
+          ))}
         </View>
 
         <View style={styles.buttonContainer}>
@@ -93,14 +125,24 @@ export default function EndGameScreen({ route, navigation }) {
             style={[styles.button, styles.playAgainButton]}
             onPress={() => navigation.navigate("Home")}
           >
-            <Text style={styles.buttonText}>🎮 Play Again</Text>
+            <LinearGradient
+              colors={['#00b09b', '#96c93d']}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>Play Again 🎮</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, styles.shareButton]}
             onPress={() => shareResults(sortedPlayers)}
           >
-            <Text style={styles.buttonText}>📤 Share Results</Text>
+            <LinearGradient
+              colors={['#4facfe', '#00f2fe']}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>Share Results 📤</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -115,11 +157,10 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingVertical: 30,
-    paddingHorizontal: 20,
   },
-  confettiContainer: {
+  header: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   heading: {
     fontSize: 36,
@@ -129,138 +170,167 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
   },
+  subheading: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    opacity: 0.8,
+    marginTop: 5,
+  },
   podiumContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    height: 140,
+    height: 200,
     marginBottom: 30,
+    paddingHorizontal: 20,
   },
   podiumStep: {
     width: 100,
     margin: 5,
-    borderRadius: 10,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
   },
-  podiumPosition: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  medalEmoji: {
+    fontSize: 36,
+    marginBottom: 8,
   },
   podiumName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  podiumPosition: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
-  rankingsCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  cardTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  playerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  rankBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  rankNumber: {
-    color: '#333',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  playerName: {
-    flex: 1,
-    fontSize: 18,
-    color: '#333',
-    fontWeight: '500',
-  },
-  playerPosition: {
-    fontSize: 16,
-    color: '#666',
+  statsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
   },
   statsCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 15,
+    borderRadius: 20,
     padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  statsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
     marginBottom: 20,
   },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
   },
   statItem: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginHorizontal: 15,
   },
   statIcon: {
-    fontSize: 30,
-    marginBottom: 5,
+    fontSize: 32,
+    marginBottom: 8,
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
+    color: '#FFFFFF',
+    opacity: 0.7,
+    marginBottom: 4,
   },
   statValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
+  },
+  highlightsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  highlightsTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  highlightCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  highlightIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  highlightIcon: {
+    fontSize: 24,
+  },
+  highlightContent: {
+    flex: 1,
+  },
+  highlightTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  highlightPlayer: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    marginTop: 20,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   button: {
     flex: 1,
-    margin: 10,
-    padding: 15,
-    borderRadius: 10,
-    elevation: 3,
+    margin: 8,
+    borderRadius: 15,
+    overflow: 'hidden',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  playAgainButton: {
-    backgroundColor: '#4CAF50',
-  },
-  shareButton: {
-    backgroundColor: '#2196F3',
+  buttonGradient: {
+    padding: 10,
+    alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: 'bold',
   },
 });

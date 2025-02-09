@@ -1,25 +1,40 @@
-import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Image, Animated, Dimensions } from 'react-native';
-import FastImage from 'react-native-fast-image';
-import { tasks } from '../Data/tasksData';
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Animated,
+  Dimensions,
+} from "react-native";
+import { tasks } from "../Data/tasksData.js";
+import {Image} from 'expo-image'
 
 const playerIcons = [
-  require('../assets/beer2.png'),
-  require('../assets/beer2.png'),
-  require('../assets/beer3.jpg'),
-  require('../assets/beer3.jpg'),
+  require("../assets/p1.png"),
+  require("../assets/p2.png"),
+  require("../assets/p3.png"),
+  require("../assets/p4.png"),
+  require("../assets/p5.png"),
+  require("../assets/p6.png"),
 ];
 
-const giftIcon = require('../assets/gift.png');
-const rewardGif = require('../assets/gift.png');
-const penaltyGif = require('../assets/beer3.jpg');
+const giftIcon = require("../assets/gift.png");
+const rewardGif = require("../assets/reward.gif");
+const penaltyGif = require("../assets/penalty.gif");
+const ghostImg = require("../assets/ex1.gif");
+const exerImg = require("../assets/ex1.gif");
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [playerPositions, setPlayerPositions] = useState(Array(players.length).fill(1));
+  const [playerPositions, setPlayerPositions] = useState(
+    Array(players.length).fill(1)
+  );
   const [diceRoll, setDiceRoll] = useState(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
   const [showTruthDareModal, setShowTruthDareModal] = useState(false);
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -31,10 +46,15 @@ export default function GameBoardScreen({ route, navigation }) {
   const [randomTasks, setRandomTasks] = useState(null);
   const [finishedPlayers, setFinishedPlayers] = useState([]);
   const [isGameFinished, setIsGameFinished] = useState(false);
-
+  const [selectedCategoryImage, setSelectedCategoryImage] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showCategoryImage, setShowCategoryImage] = useState(false);
+  const [opacity] = useState(new Animated.Value(0));
+  const [scale] = useState(new Animated.Value(0.8));
+  const [rotateAnimation] = useState(new Animated.Value(0));
+  const [pulseAnimation] = useState(new Animated.Value(1));
   const boardSize = 100;
-  const [diceAnimationValue] = useState(new Animated.Value(0));
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const squareSize = 38;
 
   const generateRandomGiftPositions = () => {
@@ -48,7 +68,97 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const [randomGiftPositions] = useState(generateRandomGiftPositions());
 
+  const DiceFace = ({ number = 1 }) => {
+    const renderDots = (number) => {
+      const validNumber = number && number >= 1 && number <= 6 ? number : 1;
+      const dotPositions = {
+        1: [{ top: "200%", left: "40%" }],
+        2: [
+          { top: "100%", left: "20%" },
+          { top: "50%", left: "60%" },
+        ],
+        3: [
+          { top: "15%", left: "20%" },
+          { top: "42%", left: "45%" },
+          { top: "70%", left: "70%" },
+        ],
+        4: [
+          { top: "20%", left: "10%" },
+          { top: "-5%", left: "70%" },
+          { top: "40%", left: "10%" },
+          { top: "20%", left: "70%" },
+        ],
+        5: [
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "70%" },
+          { top: "2%", left: "40%" },
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "70%" },
+        ],
+        6: [
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "40%" },
+          { top: "-20%", left: "70%" },
+          { top: "10%", left: "10%" },
+          { top: "-5%", left: "40%" },
+          { top: "-20%", left: "70%" },
+        ],
+      };
+      return dotPositions[validNumber].map((position, index) => (
+        <View key={index} style={[styles.dot, position]} />
+      ));
+    };
+
+    return <View style={styles.face}>{renderDots(number)}</View>;
+  };
+
+  // Add pulse animation effect
   useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnimation, {
+          toValue: 0.9,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [currentPlayerIndex]);
+
+  useEffect(() => {
+    if (showCategoryImage) {
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.8,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+
     let interval;
     if (showTaskModal && timer > 0) {
       interval = setInterval(() => {
@@ -58,15 +168,60 @@ export default function GameBoardScreen({ route, navigation }) {
       handleTaskCompletion(false);
     }
     return () => clearInterval(interval);
-  }, [showTaskModal, timer]);
+  }, [showTaskModal, timer, showCategoryImage]);
+
+  const animatePlayerMovement = (startPos, endPos, isReward = false) => {
+    setIsMoving(true);
+    let currentPosition = startPos;
+    const direction = endPos > startPos ? 1 : -1;
+
+    const moveOneStep = () => {
+      if (
+        (direction === 1 && currentPosition < endPos) ||
+        (direction === -1 && currentPosition > endPos)
+      ) {
+        currentPosition += direction;
+        const newPositions = [...playerPositions];
+        newPositions[currentPlayerIndex] = currentPosition;
+        setPlayerPositions(newPositions);
+
+        setTimeout(moveOneStep, 400);
+      } else {
+        setIsMoving(false);
+        checkGameStatus([...playerPositions]);
+
+        if (randomGiftPositions.includes(endPos) && !isReward) {
+          const randomChoice = Math.floor(Math.random() * 2);
+          setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
+          console.log(rewardPenaltyGif);
+          setShowRewardPenaltyModal(true);
+          setTimeout(() => {
+            setShowRewardPenaltyModal(false);
+            setShowTruthDareModal(true);
+        }, 6000);
+        } else {
+          const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+          if (nextPlayer !== -1) {
+            setCurrentPlayerIndex(nextPlayer);
+          }
+          setIsRolling(false);
+        }
+      }
+    };
+
+    moveOneStep();
+  };
 
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
-    
-    if (newPositions[currentPlayerIndex] >= 100 && !finishedPlayers.includes(currentPlayerIndex)) {
+
+    if (
+      newPositions[currentPlayerIndex] >= 100 &&
+      !finishedPlayers.includes(currentPlayerIndex)
+    ) {
       newFinishedPlayers.push(currentPlayerIndex);
       setFinishedPlayers(newFinishedPlayers);
-      newPositions[currentPlayerIndex] = 100; // Ensure position stays at 100
+      newPositions[currentPlayerIndex] = 100;
     }
 
     if (newFinishedPlayers.length === players.length) {
@@ -90,11 +245,7 @@ export default function GameBoardScreen({ route, navigation }) {
   };
 
   const rollDice = () => {
-    if (finishedPlayers.includes(currentPlayerIndex)) {
-      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-      if (nextPlayer !== -1) {
-        setCurrentPlayerIndex(nextPlayer);
-      }
+    if (isMoving || finishedPlayers.includes(currentPlayerIndex)) {
       return;
     }
 
@@ -103,50 +254,30 @@ export default function GameBoardScreen({ route, navigation }) {
     setDiceRoll(roll);
 
     Animated.sequence([
-      Animated.timing(diceAnimationValue, {
+      Animated.timing(rotateAnimation, {
         toValue: 1,
-        duration: 250,
+        duration: 500,
         useNativeDriver: true,
       }),
-      Animated.timing(diceAnimationValue, {
+      Animated.timing(rotateAnimation, {
         toValue: 0,
-        duration: 250,
+        duration: 500,
         useNativeDriver: true,
       }),
-    ]).start();
-
-    const newPositions = [...playerPositions];
-    const newPosition = Math.min(newPositions[currentPlayerIndex] + roll, 100);
-    newPositions[currentPlayerIndex] = newPosition;
-    setPlayerPositions(newPositions);
-
-    if (randomGiftPositions.includes(newPosition)) {
-      const randomChoice = Math.floor(Math.random() * 2);
-      console.log(randomChoice);
-      if (randomChoice === 0) {
-        setRewardPenaltyGif(rewardGif);
-      } else {
-        setRewardPenaltyGif(penaltyGif);
-      }
-      setShowRewardPenaltyModal(true);
-    } else {
-      setIsRolling(false);
-      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-      if (nextPlayer !== -1) {
-        setCurrentPlayerIndex(nextPlayer);
-      }
-    }
-
-    checkGameStatus(newPositions);
+    ]).start(() => {
+      const startPos = playerPositions[currentPlayerIndex];
+      const endPos = Math.min(startPos + roll, 100);
+      animatePlayerMovement(startPos, endPos);
+    });
   };
 
   const getRewardMovement = (difficulty) => {
     switch (difficulty) {
-      case 'Easy':
+      case "Easy":
         return Math.floor(Math.random() * 3) + 2;
-      case 'Medium':
+      case "Medium":
         return Math.floor(Math.random() * 5) + 4;
-      case 'Hard':
+      case "Hard":
         return Math.floor(Math.random() * 4) + 9;
       default:
         return 0;
@@ -155,11 +286,11 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const getPenaltyMovement = (difficulty) => {
     switch (difficulty) {
-      case 'Easy':
+      case "Easy":
         return Math.floor(Math.random() * 4) + 9;
-      case 'Medium':
+      case "Medium":
         return Math.floor(Math.random() * 5) + 4;
-      case 'Hard':
+      case "Hard":
         return Math.floor(Math.random() * 3) + 2;
       default:
         return 0;
@@ -168,192 +299,322 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
-    
+    const categories = Object.keys(tasks[environment][type]);
+    const randomCategory =
+      categories[Math.floor(Math.random() * categories.length)];
+
+    setSelectedCategoryImage(randomCategory === "Ghost" ? ghostImg : exerImg);
+
+    const selectedCategoryData = tasks[environment][type][randomCategory];
     const selectedTasks = {
-      Easy: getRandomTask(tasks[environment][type.toLowerCase()].Easy),
-      Medium: getRandomTask(tasks[environment][type.toLowerCase()].Medium),
-      Hard: getRandomTask(tasks[environment][type.toLowerCase()].Hard)
+      Easy: getRandomTask(selectedCategoryData.Easy),
+      Medium: getRandomTask(selectedCategoryData.Medium),
+      Hard: getRandomTask(selectedCategoryData.Hard),
     };
-    
+
     setRandomTasks(selectedTasks);
+    setSelectedCategory(randomCategory);
     setShowTruthDareModal(false);
     setShowDifficultyModal(true);
   };
 
   const getRandomTask = (tasksArray) => {
-    const randomIndex = Math.floor(Math.random() * tasksArray.length);
-    return tasksArray[randomIndex];
+    return tasksArray[Math.floor(Math.random() * tasksArray.length)];
   };
 
   const handleDifficultySelection = (difficulty) => {
-    setCurrentTask({ 
-      type: selectedType, 
-      difficulty, 
-      task: randomTasks[difficulty]
+    setCurrentTask({
+      type: selectedType,
+      difficulty,
+      task: randomTasks[difficulty],
+      category: selectedCategory,
     });
+
     setShowDifficultyModal(false);
-    setShowTaskModal(true);
-    setTimer(120);
+    setShowCategoryImage(true);
+    setTimeout(() => {
+      setShowCategoryImage(false);
+      setShowTaskModal(true);
+      setTimer(120);
+    }, 4000);
   };
-  
-  let move = 0;
+
   const handleTaskCompletion = (completed) => {
-    if (rewardPenaltyGif) {
+    const currentPos = playerPositions[currentPlayerIndex];
+    let move = 0;
+
+    if (currentTask) {
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
-  
+
       if (randomChoice === 0) {
         move = getRewardMovement(difficulty);
       } else {
         move = -getPenaltyMovement(difficulty);
       }
-    }
-    console.log(move);
 
-    const newPositions = [...playerPositions];
-    let newPosition = playerPositions[currentPlayerIndex] + move;
-  
-    if (newPosition < 1) newPosition = 1;
-    if (newPosition > boardSize) newPosition = 100;
-  
-    newPositions[currentPlayerIndex] = newPosition;
-    setPlayerPositions(newPositions);
-    checkGameStatus(newPositions);
-  
-    setShowTaskModal(false);
-    setShowRewardPenaltyModal(false);
-    const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-    if (nextPlayer !== -1) {
-      setCurrentPlayerIndex(nextPlayer);
+      const newPosition = Math.max(1, Math.min(currentPos + move, 100));
+
+      setShowTaskModal(false);
+      setShowRewardPenaltyModal(false);
+      setTimer(120);
+
+      animatePlayerMovement(currentPos, newPosition, true);
     }
-    setTimer(120);
-    setIsRolling(false);
   };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const diceTransform = diceAnimationValue.interpolate({
+  const rotation = rotateAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
-
   return (
-    <View style={styles.container}>      
-      <Text style={styles.title}>Truth or Dare</Text>
-      <View style={styles.playerInfo}>
-        <Image source={playerIcons[currentPlayerIndex]} style={styles.currentPlayerIcon} />
-        <View>
-          <Text style={styles.currentPlayerName}>{players[currentPlayerIndex].name}</Text>
-          <Text>Position: {playerPositions[currentPlayerIndex]}</Text>
+    <View style={styles.container}>
+      <View style={styles.gradientBackground}>
+        <Text style={styles.title}>Truth or Dare</Text>
+        <View style={[styles.board, { width: width - 10 }]}>
+          {[...Array(boardSize)].map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.square,
+                {
+                  width: squareSize,
+                  height: squareSize,
+                  backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
+                },
+              ]}
+            >
+              <Text style={styles.squareNumber}>
+                {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
+              </Text>
+              {playerPositions.map(
+                (pos, index) =>
+                  pos === i + 1 && (
+                    <Image
+                      key={index}
+                      source={playerIcons[index]}
+                      style={styles.playerIcon}
+                    />
+                  )
+              )}
+              {randomGiftPositions.includes(i + 1) && (
+                <Image source={giftIcon} style={styles.giftIcon} />
+              )}
+            </View>
+          ))}
         </View>
       </View>
-      <View style={styles.diceResultContainer}>
-        <Text style={styles.diceResultText}>
-          {diceRoll !== null ? `You rolled: ${diceRoll}` : 'Roll the dice!'}
-        </Text>
-      </View>
 
-      <View style={[styles.board, { width: width - 10 }]}>
-        {[...Array(boardSize)].map((_, i) => (
-          <View key={i} style={[styles.square, { width: squareSize, height: squareSize }]}>
-            <Text style={styles.squareNumber}>
-              {i === 0 ? 'Go' : i === boardSize - 1 ? 'End' : i + 1}
+      <View style={styles.bottomContainer}>
+        <View style={styles.playerTurnContainer}>
+          <Animated.View
+            style={[
+              styles.playerCard,
+              {
+                transform: [{ scale: pulseAnimation }],
+                borderWidth: 2,
+                borderColor: "#4299e1",
+              },
+            ]}
+          >
+            <View style={styles.yourTurnBadge}>
+              <Text style={styles.yourTurnText}>Your Turn </Text>
+            </View>
+            <Image
+              source={playerIcons[currentPlayerIndex]}
+              style={styles.playerCardIcon}
+            />
+            <View style={styles.playerCardInfo}>
+              <Text style={styles.playerCardName}>
+                {players[currentPlayerIndex].name}
+              </Text>
+            </View>
+          </Animated.View>
+
+          <TouchableOpacity
+            onPress={rollDice}
+            disabled={
+              isRolling ||
+              isMoving ||
+              finishedPlayers.includes(currentPlayerIndex)
+            }
+            style={styles.diceWrapper}
+          >
+            <Animated.View
+              style={[
+                styles.dice,
+                {
+                  transform: [{ rotate: rotation }],
+                  opacity:
+                    isRolling ||
+                    isMoving ||
+                    finishedPlayers.includes(currentPlayerIndex)
+                      ? 0.5
+                      : 1,
+                },
+              ]}
+            >
+              <DiceFace number={diceRoll} />
+            </Animated.View>
+            <Text style={styles.rollText}>
+              {isRolling
+                ? "Rolling..."
+                : isMoving
+                ? "Moving..."
+                : "Tap to Roll"}
             </Text>
-            {playerPositions.map((pos, index) => pos === i + 1 && (
-              <Image key={index} source={playerIcons[index]} style={styles.playerIcon} />
-            ))}
-            {randomGiftPositions.includes(i + 1) && (
-              <Image source={giftIcon} style={styles.giftIcon} />
-            )}
+          </TouchableOpacity>
+
+          <View style={styles.nextPlayerPreview}>
+            <View style={styles.nextPlayerInfo}>
+            <Text style={styles.nextPlayerLabel}>Next Player</Text>
+              <Image
+                source={playerIcons[(currentPlayerIndex + 1) % players.length]}
+                style={styles.nextPlayerIcon}
+              />
+              <View>
+                <Text style={styles.nextPlayerName}>
+                  {players[(currentPlayerIndex + 1) % players.length].name}
+                </Text>
+              </View>
+            </View>
           </View>
-        ))}
+        </View>
       </View>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={rollDice} 
-        disabled={isRolling || finishedPlayers.includes(currentPlayerIndex)}
-      >
-        <Animated.View style={{ transform: [{ rotate: diceTransform }] }}>
-          <Text style={styles.buttonText}>🎲 Roll Dice</Text>
-        </Animated.View>
-      </TouchableOpacity>
-
-      <Modal visible={showRewardPenaltyModal} transparent animationType="slide">
+      {/* Truth/Dare Modal */}
+      <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Image source={rewardPenaltyGif} style={styles.rewardPenaltyImage} />
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setShowRewardPenaltyModal(false);
-                setShowTruthDareModal(true);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Next</Text>
-            </TouchableOpacity>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Your Path</Text>
+              <Text style={styles.modalSubtitle}>Truth or Dare awaits...</Text>
+            </View>
+            <View style={styles.truthDareContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.truthButton]}
+                onPress={() => handleTruthDareSelection("Truth")}
+              >
+                <Text style={styles.modalButtonText}>TRUTH</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.dareButton]}
+                onPress={() => handleTruthDareSelection("Dare")}
+              >
+                <Text style={styles.modalButtonText}>DARE</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
 
-      <Modal visible={showTruthDareModal} transparent animationType="slide">
+      {/* Difficulty Modal */}
+      <Modal visible={showDifficultyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Truth or Dare</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => handleTruthDareSelection('Truth')}
-            >
-              <Text style={styles.modalButtonText}>Truth</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => handleTruthDareSelection('Dare')}
-            >
-              <Text style={styles.modalButtonText}>Dare</Text>
-            </TouchableOpacity>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Difficulty</Text>
+              <Text style={styles.modalSubtitle}>
+                Choose your challenge level
+              </Text>
+            </View>
+            <View style={styles.difficultyContainer}>
+              {randomTasks &&
+                Object.entries(randomTasks).map(([difficulty, task]) => {
+                  const difficultyStyle = {
+                    Easy: styles.difficultyEasy,
+                    Medium: styles.difficultyMedium,
+                    Hard: styles.difficultyHard,
+                  }[difficulty];
+
+                  return (
+                    <View
+                      key={difficulty}
+                      style={[styles.difficultyOption, difficultyStyle]}
+                    >
+                      <Text style={styles.difficultyTitle}>{difficulty}</Text>
+                      <TouchableOpacity
+                        style={[
+                          styles.modalButton,
+                          {
+                            backgroundColor: {
+                              Easy: "#4CAF50",
+                              Medium: "#FF9800",
+                              Hard: "#F44336",
+                            }[difficulty],
+                          },
+                        ]}
+                        onPress={() => handleDifficultySelection(difficulty)}
+                      >
+                        <Text style={styles.modalButtonText}>
+                          Accept Challenge
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+            </View>
           </View>
         </View>
       </Modal>
 
-      <Modal visible={showDifficultyModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Difficulty</Text>
-            {randomTasks && Object.entries(randomTasks).map(([difficulty, task]) => (
-              <View key={difficulty} style={styles.difficultyOption}>
-                <Text style={styles.difficultyTitle}>{difficulty}</Text>
-                <Text style={styles.taskText}>{task}</Text>
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={() => handleDifficultySelection(difficulty)}
-                >
-                  <Text style={styles.modalButtonText}>Select {difficulty}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </View>
-      </Modal>
+      {/* Category Image */}
+      <View style={styles.imgcontainer}>
+        {showCategoryImage && (
+          <Animated.View
+            style={[
+              styles.imageContainer,
+              {
+                opacity,
+                transform: [{ scale }],
+              },
+            ]}
+          >
+            <Image
+              source={selectedCategoryImage}
+              style={styles.categoryImage}
+            />
+           </Animated.View>
+        )}
+      </View>
 
-      <Modal visible={showTaskModal} transparent animationType="slide">
+      {/* Task Modal */}
+      <Modal visible={showTaskModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {currentTask && (
               <>
-                <Text style={styles.modalTitle}>{currentTask.type} - {currentTask.difficulty}</Text>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{currentTask.type}</Text>
+                  <Text
+                    style={[
+                      styles.modalSubtitle,
+                      {
+                        color: {
+                          Easy: "#4CAF50",
+                          Medium: "#FF9800",
+                          Hard: "#F44336",
+                        }[currentTask.difficulty],
+                      },
+                    ]}
+                  >
+                    {currentTask.difficulty} Challenge
+                  </Text>
+                </View>
                 <Text style={styles.taskText}>{currentTask.task}</Text>
-                <Text style={styles.timer}>Time remaining: {formatTime(timer)}</Text>
+                <Text style={styles.timer}>{formatTime(timer)}</Text>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.successButton]}
                   onPress={() => handleTaskCompletion(true)}
                 >
-                  <Text style={styles.modalButtonText}>Done</Text>
+                  <Text style={styles.modalButtonText}>Complete Challenge</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -361,15 +622,46 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      {/* Reward/Penalty Modal */}
+      <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View>
+            <View style={styles.modalHeader}>
+            </View>
+            <Image
+              source={rewardPenaltyGif}
+              style={styles.rewardPenaltyImage}
+            />
+            {/* <TouchableOpacity
+              style={[
+                styles.modalButton,
+                {
+                  backgroundColor:
+                    rewardPenaltyGif === rewardGif ? "#4CAF50" : "#F44336",
+                },
+              ]}
+              onPress={() => {
+                setShowRewardPenaltyModal(false);
+                setShowTruthDareModal(true);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Continue</Text>
+            </TouchableOpacity> */}
+          </View>
+        </View>
+      </Modal>
+
       {isGameFinished && (
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#4CAF50' }]} 
-          onPress={() => navigation.navigate('EndGame', { 
-            players: players.map((player, index) => ({
-              ...player,
-              position: finishedPlayers.indexOf(index) + 1
-            }))
-          })}
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#4CAF50" }]}
+          onPress={() =>
+            navigation.navigate("EndGame", {
+              players: players.map((player, index) => ({
+                ...player,
+                position: finishedPlayers.indexOf(index) + 1,
+              })),
+            })
+          }
         >
           <Text style={styles.buttonText}>End Game</Text>
         </TouchableOpacity>
@@ -381,20 +673,53 @@ export default function GameBoardScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1a365d",
   },
+  gradientBackground: {
+    flex: 1,
+    backgroundColor: "#2a4365",
+    paddingTop: 20,
+    alignItems: "center",
+  },
+  imgcontainer: {
+    flex: 1, // Take up the full screen
+    justifyContent: "center", // Center the content vertically
+    alignItems: "center", // Center the content horizontally
+    position: "absolute", // Position it on top of the game screen
+    top: '25%', // Align at the top of the screen
+    left: '25%', // Align at the left of the screen
+    width: "50%", // Take full width
+    height: "50%", // Take full height
+  },
+  imageContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1, // Take at least half the screen height
+    width: "100%", // Full width
+    height: "50%", // Ensure it covers half the screen or more
+    position: "absolute", // Keep it in front of the other content
+    zIndex: 1000, // Higher z-index to stay on top
+  },
+  categoryImage: {
+    width: 400, // Adjust the size as needed
+    height: 150, // Adjust the size as needed
+    borderRadius: 10,
+  },
+
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    fontSize: 28,
+    fontWeight: "bold",
+    marginTop: 100,
+    marginBottom: 0,
+    color: "#fff",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   playerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   currentPlayerIcon: {
@@ -402,11 +727,12 @@ const styles = StyleSheet.create({
     height: 50,
     marginRight: 10,
     borderRadius: 25,
+    zIndex: 2,
   },
   currentPlayerName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#555',
+    fontWeight: "bold",
+    color: "#555",
   },
   diceResultContainer: {
     marginTop: 20,
@@ -414,126 +740,335 @@ const styles = StyleSheet.create({
   },
   diceResultText: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   board: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    marginBottom: 20,
-    borderColor: '#ddd',
-    borderRadius: 2,
-    overflow: 'hidden',
+    flexWrap: "wrap",
+    flexDirection: "row",
+    marginTop: "10%",
+    borderColor: "#ddd",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    overflow: "hidden",
+    padding: 0,
   },
   square: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     margin: 0,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: '#ddd',
+    backgroundColor: "#f0f0f0",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#cbd5e0",
   },
   squareNumber: {
-    position: 'absolute',
+    position: "absolute",
     top: 5,
     fontSize: 12,
-    color: '#333',
+    color: "#4a5568",
   },
   playerIcon: {
-    width: 30,
-    height: 30,
-    position: 'absolute',
-    top: 5,
+    width: 20,
+    height: 35,
+    position: "absolute",
     borderRadius: 15,
+    zIndex:2,
   },
   giftIcon: {
     width: 30,
     height: 30,
-    position: 'absolute',
+    position: "absolute",
     bottom: 5,
   },
   button: {
-    backgroundColor: '#FF9800',
+    backgroundColor: "#FF9800",
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
+    marginBottom: 160,
   },
   buttonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 18,
-    textAlign: 'center',
-    fontWeight: '500',
+    textAlign: "center",
+    fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   modalContent: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
+    backgroundColor: "#FFF",
+    borderRadius: 20,
     padding: 25,
-    width: '85%',
+    width: "90%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 25,
+    textAlign: "center",
+    color: "#1a1a1a",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   modalButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    width: '90%',
-    alignItems: 'center',
+    borderRadius: 12,
+    marginVertical: 8,
+    width: "100%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   modalButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   difficultyOption: {
-    width: '100%',
-    marginBottom: 15,
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    width: "100%",
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
   },
   difficultyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#1a1a1a",
+    textAlign: "center",
   },
   taskText: {
     fontSize: 18,
-    marginBottom: 15,
-    textAlign: 'center',
-    color: '#555',
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#495057",
+    lineHeight: 24,
   },
   timer: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 15,
-    color: '#FF5722',
+    fontSize: 32,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 20,
+    color: "#FF5722",
+    fontFamily: "System",
   },
   successButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   failButton: {
-    backgroundColor: '#F44336',
+    backgroundColor: "#F44336",
   },
   rewardPenaltyImage: {
-    width: 100,
-    height: 100,
+    width: 320,
+    height: 220,
+    marginBottom: 25,
+  },
+  truthDareContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 10,
+  },
+  truthButton: {
+    backgroundColor: "#4CAF50",
+    width: "48%",
+  },
+  dareButton: {
+    backgroundColor: "#FF5722",
+    width: "48%",
+  },
+  difficultyContainer: {
+    width: "100%",
+  },
+  difficultyEasy: {
+    borderColor: "#4CAF50",
+    borderWidth: 2,
+  },
+  difficultyMedium: {
+    borderColor: "#FF9800",
+    borderWidth: 2,
+  },
+  difficultyHard: {
+    borderColor: "#F44336",
+    borderWidth: 2,
+  },
+  modalHeader: {
+    width: "100%",
+    alignItems: "center",
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e9ecef",
+    paddingBottom: 15,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: "#6c757d",
+    marginTop: 5,
+  },
+  bottomContainer: {
+    position: "absolute",
+    bottom: 0,
+    display: "flex",
+    flexDirection: "row",
+    backgroundColor: "#2d3748",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  playerTurnContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 10,
+  },
+  yourTurnText:{
+    color:"#a0aec0",
+    marginBottom:7,
+  },
+  playerCard: {
+    flexDirection: "column",
+    alignItems: "center",
+    backgroundColor: "#3c4d63",
+    padding: 10,
+    borderRadius: 20,
+    width: "30%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  playerCardIcon: {
+    width: 30,
+    height: 50,
+    marginBottom: 8,
+  },
+  playerCardInfo: {
+    alignItems: "center",
+  },
+  playerCardName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  playerCardPosition: {
+    fontSize: 12,
+    color: "#a0aec0",
+    textAlign: "center",
+  },
+  diceWrapper: {
+    alignItems: "center",
+    width: "30%",
+    backgroundColor: "#3c4d63",
+    padding: 12,
+    borderRadius: 20,
+  },
+  dice: {
+    width: 70,
+    height: 70,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#90cdf4",
+    borderRadius: 16,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    marginBottom: 8,
+  },
+  rollText: {
+    fontSize: 14,
+    color: "#a0aec0",
+    marginTop: 4,
+  },
+  nextPlayerPreview: {
+    flexDirection: "column",
+    alignItems: "center",
+    backgroundColor: "#3c4d63",
+    padding: 10,
+    borderRadius: 20,
+    width: "30%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  nextPlayerInfo: {
+    fontSize: 12,
+    color: "#a0aec0",
+    alignItems:'center',
+  },
+  nextPlayerIcon: {
+    width: 40,
+    height: 50,
+    marginBottom: 8,
+  },
+  nextPlayerLabel: {
+    fontSize: 12,
+    color: "#a0aec0",
+    marginBottom: 7,
+  },
+  nextPlayerName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    backgroundColor: "#4299e1",
+    borderRadius: 6,
+    //position: 'absolute',
   },
 });

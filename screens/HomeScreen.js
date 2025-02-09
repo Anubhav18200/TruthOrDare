@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
-
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import {Image} from "expo-image";
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
@@ -11,34 +11,25 @@ export default function HomeScreen({ navigation }) {
           source={require('../assets/logo.png')} 
           style={styles.logo}
         />
-        <Text style={styles.title}>Truth or Dare Twisted!</Text>
         <Text style={styles.subtitle}>Are you brave enough to face the unexpected?</Text>
       </View>
 
-      <View style={styles.bottomSection}>
         <TouchableOpacity 
           style={styles.button}
           activeOpacity={0.8}
           onPress={() => navigation.navigate('AddPlayers')}
         >
-          <Text style={styles.buttonText}>Accept the Challenge</Text>
+          <Text style={styles.buttonText}>Play</Text>
           <Text style={styles.buttonSubtext}>If you dare...</Text>
         </TouchableOpacity>
-
-        <View style={styles.decorationContainer}>
-          <View style={[styles.decorationDot, { backgroundColor: '#FF4081' }]} />
-          <View style={[styles.decorationDot, { backgroundColor: '#FF80AB' }]} />
-          <View style={[styles.decorationDot, { backgroundColor: '#FF1744' }]} />
-        </View>
       </View>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fde8e8',
+    backgroundColor: 'rgb(29, 185, 177)',  // Updated to a more accurate teal color
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 40
@@ -51,34 +42,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20
   },
   logo: {
-    width: width * 0.8,
-    height: width * 0.6,
-    resizeMode: 'contain',
-    marginBottom: 30
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FF4081',
-    textAlign: 'center',
-    marginBottom: 12,
-    textShadowColor: 'rgba(255, 64, 129, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4
+    width: width * 1,
+    height: width * 0.8,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#FF80AB',
+    fontSize: 22,
+    color: 'white',
     textAlign: 'center',
     marginBottom: 20,
     fontStyle: 'italic',
     letterSpacing: 0.5
-  },
-  bottomSection: {
-    width: '100%',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 20
   },
   button: {
     backgroundColor: '#FF1744',
@@ -94,13 +68,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
     borderWidth: 2,
     borderColor: '#FF4081'
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -115,7 +89,6 @@ const styles = StyleSheet.create({
   decorationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20
   },
   decorationDot: {
     width: 8,

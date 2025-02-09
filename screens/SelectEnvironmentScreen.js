@@ -1,159 +1,207 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function SelectEnvironmentScreen({ route, navigation }) {
     const { players } = route.params;
     const [selectedEnv, setSelectedEnv] = useState(null);
+    const [scaleAnim] = useState(new Animated.Value(1));
 
     const environments = [
-        { name: 'Home', icon: '🏠' },
-        { name: 'Office', icon: '💼' },
-        { name: 'Party', icon: '🎉' },
-        { name: 'School', icon: '🏫' }
+        { name: 'Home', icon: '🏠', description: 'Casual and comfortable setting', gradient: ['#2193b0', '#6dd5ed'] },
+        { name: 'Office', icon: '💼', description: 'Professional environment', gradient: ['#8E2DE2', '#4A00E0'] },
+        { name: 'Party', icon: '🎉', description: 'Fun and exciting atmosphere', gradient: ['#FF416C', '#FF4B2B'] },
+        { name: 'School', icon: '🏫', description: 'Educational setting', gradient: ['#ee0979', '#ff6a00'] }
     ];
 
+    const handleSelect = (name) => {
+        setSelectedEnv(name);
+        Animated.sequence([
+            Animated.timing(scaleAnim, {
+                toValue: 1.05,
+                duration: 150,
+                useNativeDriver: true
+            }),
+            Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true
+            })
+        ]).start();
+    };
+
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.content}>
-                {/* Header */}
-                <Text style={styles.title}>Choose Your Environment</Text>
-                
-                {/* Environment Cards */}
-                <View style={styles.cardsContainer}>
+        <LinearGradient
+            colors={['#1a1a2e', '#16213e']}
+            style={styles.container}
+        >
+            <View style={styles.headerContainer}>
+                <Text style={styles.title}>Choose Your Vibe</Text>
+                <Text style={styles.subtitle}>Select the perfect mood for your game</Text>
+            </View>
+
+            <ScrollView style={styles.cardsContainer}>
+                <View style={styles.cardsWrapper}>
                     {environments.map((env) => (
                         <TouchableOpacity
                             key={env.name}
-                            style={[
-                                styles.card,
-                                selectedEnv === env.name && styles.selectedCard
-                            ]}
-                            onPress={() => setSelectedEnv(env.name)}
-                            activeOpacity={0.8}
+                            onPress={() => handleSelect(env.name)}
+                            activeOpacity={0.9}
                         >
-                            <View style={styles.cardContent}>
-                                <Text style={styles.icon}>{env.icon}</Text>
-                                <View style={styles.cardTextContainer}>
-                                    <Text style={[
-                                        styles.cardTitle,
-                                        selectedEnv === env.name && styles.selectedText
-                                    ]}>
-                                        {env.name}
-                                    </Text>
-                                    <Text style={[
-                                        styles.cardSubtitle,
-                                        selectedEnv === env.name && styles.selectedSubtext
-                                    ]}>
-                                        Tap to select
-                                    </Text>
-                                </View>
-                            </View>
+                            <Animated.View
+                                style={[
+                                    styles.card,
+                                    selectedEnv === env.name && styles.selectedCard,
+                                    { transform: [{ scale: selectedEnv === env.name ? scaleAnim : 1 }] }
+                                ]}
+                            >
+                                <LinearGradient
+                                    colors={env.gradient}
+                                    style={styles.cardGradient}
+                                >
+                                    <Text style={styles.cardIcon}>{env.icon}</Text>
+                                    <Text style={styles.cardTitle}>{env.name}</Text>
+                                    <Text style={styles.cardDescription}>{env.description}</Text>
+                                    {selectedEnv === env.name && (
+                                        <View style={styles.selectedIndicator}>
+                                            <Text style={styles.checkmark}>✓</Text>
+                                        </View>
+                                    )}
+                                </LinearGradient>
+                            </Animated.View>
                         </TouchableOpacity>
                     ))}
                 </View>
+            </ScrollView>
 
-                {/* Next Button */}
+            <View style={styles.footer}>
                 <TouchableOpacity
-                    style={[
-                        styles.nextButton,
-                        !selectedEnv && styles.disabledButton
-                    ]}
+                    style={[styles.startButton, !selectedEnv && styles.startButtonDisabled]}
+                    onPress={() => {
+                        if (selectedEnv) {
+                            const selectedEnvironment = environments.find(env => env.name === selectedEnv);
+                            navigation.navigate('GameBoard', {
+                                players,
+                                environment: selectedEnvironment.name
+                            });
+                        }
+                    }}
                     disabled={!selectedEnv}
-                    onPress={() => navigation.navigate('GameBoard', {
-                        players,
-                        environment: selectedEnv
-                    })}
                 >
-                    <Text style={styles.nextButtonText}>Continue to Game</Text>
+                    <Text style={styles.startButtonText}>
+                        {selectedEnv ? "Let's Begin!" : "Select a Mode"}
+                    </Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: '#FFF5E6'
-    },
-    content: {
-        marginTop: 70,
-        padding: 20,
-        alignItems: 'center'
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#8B4513',
-        marginBottom: 24,
-        textAlign: 'center'
-    },
-    cardsContainer: {
-        width: '100%'
-    },
-    card: {
-        backgroundColor: '#FFB74D',
-        borderRadius: 16,
-        marginBottom: 16,
-        padding: 20,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4
-    },
-    selectedCard: {
-        backgroundColor: '#FF8F00',
-        transform: [{ scale: 1.02 }],
-        elevation: 5
-    },
-    cardContent: {
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    icon: {
-        fontSize: 32,
-        marginRight: 16
-    },
-    cardTextContainer: {
         flex: 1
     },
-    cardTitle: {
-        fontSize: 20,
+    headerContainer: {
+        padding: 20,
+        alignItems: 'center',
+        marginTop: 70
+    },
+    title: {
+        fontSize: 32,
         fontWeight: 'bold',
-        color: '#5D4037'
+        color: '#e94560',
+        marginBottom: 8,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 3
     },
-    selectedText: {
-        color: '#FFF'
+    subtitle: {
+        fontSize: 16,
+        color: '#ffffff',
+        opacity: 0.7
     },
-    cardSubtitle: {
-        fontSize: 14,
-        color: '#8D6E63',
-        marginTop: 4
+    cardsContainer: {
+        flex: 1
     },
-    selectedSubtext: {
-        color: '#FFF3E0'
+    cardsWrapper: {
+        padding: 16,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between'
     },
-    nextButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: 30,
-        width: '80%',
-        marginTop: 24,
-        elevation: 4,
+    card: {
+        width: 160,
+        height: 200,
+        marginBottom: 16,
+        borderRadius: 20,
+        overflow: 'hidden',
+        elevation: 5,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
-        shadowRadius: 4
+        shadowRadius: 3.84
     },
-    disabledButton: {
-        backgroundColor: '#BDBDBD',
-        elevation: 0
+    selectedCard: {
+        borderWidth: 3,
+        borderColor: 'yellow'
     },
-    nextButtonText: {
-        color: '#FFF',
+    cardGradient: {
+        flex: 1,
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    cardIcon: {
+        fontSize: 40,
+        marginBottom: 12
+    },
+    cardTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        textAlign: 'center'
+        color: '#ffffff',
+        textAlign: 'center',
+        marginBottom: 8
+    },
+    cardDescription: {
+        fontSize: 14,
+        color: '#ffffff',
+        textAlign: 'center',
+        opacity: 0.8
+    },
+    selectedIndicator: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#e94560',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkmark: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: 'bold'
+    },
+    footer: {
+        padding: 20,
+        backgroundColor: 'rgba(22, 33, 62, 0.9)'
+    },
+    startButton: {
+        backgroundColor: '#e94560',
+        borderRadius: 25,
+        padding: 16,
+        alignItems: 'center',
+        marginBottom: 70,
+    },
+    startButtonDisabled: {
+        backgroundColor: '#233554',
+        opacity: 0.5
+    },
+    startButtonText: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold'
     }
 });
