@@ -23,8 +23,11 @@ const playerIcons = [
 const giftIcon = require("../assets/gift.png");
 const rewardGif = require("../assets/reward.gif");
 const penaltyGif = require("../assets/penalty.gif");
-const ghostImg = require("../assets/ex1.gif");
+const ghostImg = require("../assets/ghost.gif");
 const exerImg = require("../assets/ex1.gif");
+const singImg = require("../assets/singing.gif");
+const danceImg = require("../assets/dancing.gif");
+const funnyImg = require("../assets/funny.gif");
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
@@ -317,8 +320,22 @@ export default function GameBoardScreen({ route, navigation }) {
     const randomCategory =
       categories[Math.floor(Math.random() * categories.length)];
 
-    setSelectedCategoryImage(randomCategory === "Ghost" ? ghostImg : exerImg);
-
+    // if(randomCategory === "Ghost"){
+    //   setSelectedCategoryImage(ghostImg);
+    // }
+    // else if(randomCategory === "Exercise"){
+    //   setSelectedCategoryImage(exerImg);
+    // }
+    // else if(randomCategory === "Dancing"){
+    //   setSelectedCategoryImage(danceImg);
+    // }
+    // else if(randomCategory === "FunnyTask"){
+    //   setSelectedCategoryImage(funnyImg);
+    // }
+    // else {
+    //   setSelectedCategoryImage(singImg);
+    // }
+    setSelectedCategoryImage(exerImg);
     const selectedCategoryData = tasks[environment][type][randomCategory];
     const selectedTasks = {
       Easy: getRandomTask(selectedCategoryData.Easy),
@@ -346,11 +363,11 @@ export default function GameBoardScreen({ route, navigation }) {
 
     setShowDifficultyModal(false);
     setShowCategoryImage(true);
-    setTimeout(() => {
-      setShowCategoryImage(false);
-      setShowTaskModal(true);
-      setTimer(120);
-    }, 4000);
+    // setTimeout(() => {
+    //   setShowCategoryImage(false);
+    //   setShowTaskModal(true);
+    //   setTimer(120);
+    // }, 4000);
   };
 
   const handleTaskCompletion = (completed) => {
@@ -701,9 +718,9 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Center the content vertically
     alignItems: "center", // Center the content horizontally
     position: "absolute", // Position it on top of the game screen
-    top: "25%", // Align at the top of the screen
-    left: "25%", // Align at the left of the screen
-    width: "50%", // Take full width
+    //top: "25%", // Align at the top of the screen
+    //left: "25%", // Align at the left of the screen
+    width: "100%", // Take full width
     height: "50%", // Take full height
   },
   imageContainer: {
@@ -711,14 +728,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1, // Take at least half the screen height
     width: "100%", // Full width
-    height: "50%", // Ensure it covers half the screen or more
+    height: "100%", // Ensure it covers half the screen or more
     position: "absolute", // Keep it in front of the other content
     zIndex: 1000, // Higher z-index to stay on top
   },
   categoryImage: {
-    width: 400, // Adjust the size as needed
-    height: 150, // Adjust the size as needed
-    borderRadius: 10,
+    width: "100%", // Adjust the size as needed
+    height: "30%", // Adjust the size as needed
+    // borderRadius: 10,
   },
 
   title: {
