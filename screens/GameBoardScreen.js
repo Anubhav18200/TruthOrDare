@@ -198,14 +198,14 @@ export default function GameBoardScreen({ route, navigation }) {
           setTimeout(() => {
             setShowRewardPenaltyModal(false);
             setShowTruthDareModal(true);
-          }, 6000);
+          }, 3000);
         } else if (randomGiftPositions.includes(endPos) && isReward) {
           // If landed on a gift after a reward movement, trigger another task
           setShowRewardPenaltyModal(true);
           setTimeout(() => {
             setShowRewardPenaltyModal(false);
             setShowTruthDareModal(true);
-          }, 6000);
+          }, 3000);
         } else {
           // No gift encountered, move to next player
           const nextPlayer = findNextActivePlayer(currentPlayerIndex);
@@ -222,7 +222,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
-
+  
     if (
       newPositions[currentPlayerIndex] >= 100 &&
       !finishedPlayers.includes(currentPlayerIndex)
@@ -231,9 +231,15 @@ export default function GameBoardScreen({ route, navigation }) {
       setFinishedPlayers(newFinishedPlayers);
       newPositions[currentPlayerIndex] = 100;
     }
-
+  
     if (newFinishedPlayers.length === players.length) {
       setIsGameFinished(true);
+    } else if (newFinishedPlayers.includes(currentPlayerIndex)) {
+      // Move to next player immediately
+      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+      if (nextPlayer !== -1) {
+        setCurrentPlayerIndex(nextPlayer);
+      }
     }
   };
 

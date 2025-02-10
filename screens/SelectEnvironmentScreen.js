@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const { width, height } = Dimensions.get('window');
 
 export default function SelectEnvironmentScreen({ route, navigation }) {
     const { players } = route.params;
@@ -11,7 +13,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
         { name: 'Home', icon: '🏠', description: 'Casual and comfortable setting', gradient: ['#2193b0', '#6dd5ed'] },
         { name: 'Office', icon: '💼', description: 'Professional environment', gradient: ['#8E2DE2', '#4A00E0'] },
         { name: 'Party', icon: '🎉', description: 'Fun and exciting atmosphere', gradient: ['#FF416C', '#FF4B2B'] },
-        { name: 'School', icon: '🏫', description: 'Educational setting', gradient: ['#ee0979', '#ff6a00'] }
+        { name: 'School', icon: '🏫', description: 'Educational setting', gradient: ['#FFEB3B', '#FF9800'] }
     ];
 
     const handleSelect = (name) => {
@@ -40,7 +42,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
                 <Text style={styles.subtitle}>Select the perfect mood for your game</Text>
             </View>
 
-            <ScrollView style={styles.cardsContainer}>
+            <View style={styles.cardsContainer}>
                 <View style={styles.cardsWrapper}>
                     {environments.map((env) => (
                         <TouchableOpacity
@@ -72,7 +74,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
                         </TouchableOpacity>
                     ))}
                 </View>
-            </ScrollView>
+            </View>
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
         opacity: 0.7
     },
     cardsContainer: {
-        flex: 1
+        flex: 1,
     },
     cardsWrapper: {
         padding: 16,
@@ -185,7 +187,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     footer: {
-        padding: 20,
+        height: height - '90%',
+        paddingLeft: 20,
+        paddingRight: 20,
         backgroundColor: 'rgba(22, 33, 62, 0.9)'
     },
     startButton: {
