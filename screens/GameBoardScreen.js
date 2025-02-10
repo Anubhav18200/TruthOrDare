@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { tasks } from "../Data/tasksData.js";
-import {Image} from 'expo-image'
+import { Image } from "expo-image";
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -190,16 +190,24 @@ export default function GameBoardScreen({ route, navigation }) {
         setIsMoving(false);
         checkGameStatus([...playerPositions]);
 
+        // Check if player landed on a gift and this wasn't a reward movement
         if (randomGiftPositions.includes(endPos) && !isReward) {
           const randomChoice = Math.floor(Math.random() * 2);
           setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
-          console.log(rewardPenaltyGif);
           setShowRewardPenaltyModal(true);
           setTimeout(() => {
             setShowRewardPenaltyModal(false);
             setShowTruthDareModal(true);
-        }, 6000);
+          }, 6000);
+        } else if (randomGiftPositions.includes(endPos) && isReward) {
+          // If landed on a gift after a reward movement, trigger another task
+          setShowRewardPenaltyModal(true);
+          setTimeout(() => {
+            setShowRewardPenaltyModal(false);
+            setShowTruthDareModal(true);
+          }, 6000);
         } else {
+          // No gift encountered, move to next player
           const nextPlayer = findNextActivePlayer(currentPlayerIndex);
           if (nextPlayer !== -1) {
             setCurrentPlayerIndex(nextPlayer);
@@ -474,7 +482,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
           <View style={styles.nextPlayerPreview}>
             <View style={styles.nextPlayerInfo}>
-            <Text style={styles.nextPlayerLabel}>Next Player</Text>
+              <Text style={styles.nextPlayerLabel}>Next Player</Text>
               <Image
                 source={playerIcons[(currentPlayerIndex + 1) % players.length]}
                 style={styles.nextPlayerIcon}
@@ -581,7 +589,7 @@ export default function GameBoardScreen({ route, navigation }) {
               source={selectedCategoryImage}
               style={styles.categoryImage}
             />
-           </Animated.View>
+          </Animated.View>
         )}
       </View>
 
@@ -626,8 +634,7 @@ export default function GameBoardScreen({ route, navigation }) {
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View>
-            <View style={styles.modalHeader}>
-            </View>
+            <View style={styles.modalHeader}></View>
             <Image
               source={rewardPenaltyGif}
               style={styles.rewardPenaltyImage}
@@ -688,8 +695,8 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Center the content vertically
     alignItems: "center", // Center the content horizontally
     position: "absolute", // Position it on top of the game screen
-    top: '25%', // Align at the top of the screen
-    left: '25%', // Align at the left of the screen
+    top: "25%", // Align at the top of the screen
+    left: "25%", // Align at the left of the screen
     width: "50%", // Take full width
     height: "50%", // Take full height
   },
@@ -773,7 +780,7 @@ const styles = StyleSheet.create({
     height: 35,
     position: "absolute",
     borderRadius: 15,
-    zIndex:2,
+    zIndex: 2,
   },
   giftIcon: {
     width: 30,
@@ -957,9 +964,9 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 10,
   },
-  yourTurnText:{
-    color:"#a0aec0",
-    marginBottom:7,
+  yourTurnText: {
+    color: "#a0aec0",
+    marginBottom: 7,
   },
   playerCard: {
     flexDirection: "column",
@@ -1045,7 +1052,7 @@ const styles = StyleSheet.create({
   nextPlayerInfo: {
     fontSize: 12,
     color: "#a0aec0",
-    alignItems:'center',
+    alignItems: "center",
   },
   nextPlayerIcon: {
     width: 40,
