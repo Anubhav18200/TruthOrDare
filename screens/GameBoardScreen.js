@@ -56,6 +56,8 @@ export default function GameBoardScreen({ route, navigation }) {
   const [scale] = useState(new Animated.Value(0.8));
   const [rotateAnimation] = useState(new Animated.Value(0));
   const [pulseAnimation] = useState(new Animated.Value(1));
+  const [extraMoves, setExtraMoves] = useState(null);
+  const [showMoves, setShowMoves] = useState(false);
   const boardSize = 100;
   const { width } = Dimensions.get("window");
   const squareSize = 38;
@@ -225,7 +227,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
-  
+
     if (
       newPositions[currentPlayerIndex] >= 100 &&
       !finishedPlayers.includes(currentPlayerIndex)
@@ -234,7 +236,7 @@ export default function GameBoardScreen({ route, navigation }) {
       setFinishedPlayers(newFinishedPlayers);
       newPositions[currentPlayerIndex] = 100;
     }
-  
+
     if (newFinishedPlayers.length === players.length) {
       setIsGameFinished(true);
     } else if (newFinishedPlayers.includes(currentPlayerIndex)) {
@@ -363,11 +365,11 @@ export default function GameBoardScreen({ route, navigation }) {
 
     setShowDifficultyModal(false);
     setShowCategoryImage(true);
-    // setTimeout(() => {
-    //   setShowCategoryImage(false);
-    //   setShowTaskModal(true);
-    //   setTimer(120);
-    // }, 4000);
+    setTimeout(() => {
+      setShowCategoryImage(false);
+      setShowTaskModal(true);
+      setTimer(120);
+    }, 4000);
   };
 
   const handleTaskCompletion = (completed) => {
@@ -383,13 +385,18 @@ export default function GameBoardScreen({ route, navigation }) {
       } else {
         move = -getPenaltyMovement(difficulty);
       }
-
+      console.log(move);
+      setExtraMoves(move);
+      console.log(extraMoves);
       const newPosition = Math.max(1, Math.min(currentPos + move, 100));
 
       setShowTaskModal(false);
       setShowRewardPenaltyModal(false);
+      setShowMoves(true);
+      // setTimeout(() => {
+      //   setShowMoves(false);
+      // }, 3000);
       setTimer(120);
-
       animatePlayerMovement(currentPos, newPosition, true);
     }
   };
@@ -662,21 +669,15 @@ export default function GameBoardScreen({ route, navigation }) {
               source={rewardPenaltyGif}
               style={styles.rewardPenaltyImage}
             />
-            {/* <TouchableOpacity
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor:
-                    rewardPenaltyGif === rewardGif ? "#4CAF50" : "#F44336",
-                },
-              ]}
-              onPress={() => {
-                setShowRewardPenaltyModal(false);
-                setShowTruthDareModal(true);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Continue</Text>
-            </TouchableOpacity> */}
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showMoves} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View>
+            <View style={styles.modalHeader}></View>
+            <Text style={styles.moves}>{extraMoves}</Text>
           </View>
         </View>
       </Modal>
@@ -701,6 +702,12 @@ export default function GameBoardScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  moves:{
+    height: '100%',
+    width: '100%',
+    fontSize:100,
+    textAlign: 'center'
+  },
   container: {
     flex: 1,
     justifyContent: "center",
