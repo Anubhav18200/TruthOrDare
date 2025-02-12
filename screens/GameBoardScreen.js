@@ -175,11 +175,84 @@ export default function GameBoardScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [showTaskModal, timer, showCategoryImage]);
 
+  // const animatePlayerMovement = (startPos, endPos, isReward = false) => {
+  //   setIsMoving(true);
+  //   let currentPosition = startPos;
+  //   const direction = endPos > startPos ? 1 : -1;
+
+  //   const moveOneStep = () => {
+  //     if (
+  //       (direction === 1 && currentPosition < endPos) ||
+  //       (direction === -1 && currentPosition > endPos)
+  //     ) {
+  //       currentPosition += direction;
+  //       const newPositions = [...playerPositions];
+  //       newPositions[currentPlayerIndex] = currentPosition;
+  //       setPlayerPositions(newPositions);
+
+  //       setTimeout(moveOneStep, 10);
+  //     } else {
+  //       setIsMoving(false);
+  //       checkGameStatus([...playerPositions]);
+
+  //       // Check if player landed on a gift and this wasn't a reward movement
+  //       if (randomGiftPositions.includes(endPos) && !isReward) {
+  //         const randomChoice = Math.floor(Math.random() * 2);
+  //         setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
+  //         setShowRewardPenaltyModal(true);
+  //         setTimeout(() => {
+  //           setShowRewardPenaltyModal(false);
+  //           setShowTruthDareModal(true);
+  //         }, 3000);
+  //       } else if (randomGiftPositions.includes(endPos) && isReward) {
+  //         // If landed on a gift after a reward movement, trigger another task
+  //         setShowRewardPenaltyModal(true);
+  //         setTimeout(() => {
+  //           setShowRewardPenaltyModal(false);
+  //           setShowTruthDareModal(true);
+  //         }, 3000);
+  //       } else {
+  //         // No gift encountered, move to next player
+  //         const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+  //         if (nextPlayer !== -1) {
+  //           setCurrentPlayerIndex(nextPlayer);
+  //         }
+  //         setIsRolling(false);
+  //       }
+  //     }
+  //   };
+
+  //   moveOneStep();
+  // };
+
+  // const checkGameStatus = (newPositions) => {
+  //   const newFinishedPlayers = [...finishedPlayers];
+
+  //   if (
+  //     newPositions[currentPlayerIndex] >= 100 &&
+  //     !finishedPlayers.includes(currentPlayerIndex)
+  //   ) {
+  //     newFinishedPlayers.push(currentPlayerIndex);
+  //     setFinishedPlayers(newFinishedPlayers);
+  //     newPositions[currentPlayerIndex] = 100;
+  //   }
+
+  //   if (newFinishedPlayers.length === players.length) {
+  //     setIsGameFinished(true);
+  //   } else if (newFinishedPlayers.includes(currentPlayerIndex)) {
+  //     // Move to next player immediately
+  //     const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+  //     if (nextPlayer !== -1) {
+  //       setCurrentPlayerIndex(nextPlayer);
+  //     }
+  //   }
+  // };
+
   const animatePlayerMovement = (startPos, endPos, isReward = false) => {
     setIsMoving(true);
     let currentPosition = startPos;
     const direction = endPos > startPos ? 1 : -1;
-
+  
     const moveOneStep = () => {
       if (
         (direction === 1 && currentPosition < endPos) ||
@@ -189,12 +262,19 @@ export default function GameBoardScreen({ route, navigation }) {
         const newPositions = [...playerPositions];
         newPositions[currentPlayerIndex] = currentPosition;
         setPlayerPositions(newPositions);
-
-        setTimeout(moveOneStep, 400);
+  
+        setTimeout(moveOneStep, 10);
       } else {
         setIsMoving(false);
-        checkGameStatus([...playerPositions]);
-
+  
+        // Update the player's position and check if they have reached 100
+        const newPositions = [...playerPositions];
+        newPositions[currentPlayerIndex] = currentPosition;
+        setPlayerPositions(newPositions);
+  
+        // Call checkGameStatus to update the game state
+        checkGameStatus(newPositions);
+  
         // Check if player landed on a gift and this wasn't a reward movement
         if (randomGiftPositions.includes(endPos) && !isReward) {
           const randomChoice = Math.floor(Math.random() * 2);
@@ -221,26 +301,59 @@ export default function GameBoardScreen({ route, navigation }) {
         }
       }
     };
-
+  
     moveOneStep();
   };
 
-  const checkGameStatus = (newPositions) => {
-    const newFinishedPlayers = [...finishedPlayers];
+  // const checkGameStatus = (newPositions) => {
+  //   const newFinishedPlayers = [...finishedPlayers];
 
+  //   // Check if the current player has reached 100
+  //   if (
+  //     newPositions[currentPlayerIndex] >= 100 &&
+  //     !finishedPlayers.includes(currentPlayerIndex)
+  //   ) {
+  //     newFinishedPlayers.push(currentPlayerIndex);
+  //     setFinishedPlayers(newFinishedPlayers);
+  //     newPositions[currentPlayerIndex] = 100; // Ensure the player doesn't go beyond 100
+  //   }
+
+  //   // Check if all players have reached 100
+  //   if (newFinishedPlayers.length === players.length) {
+  //     setIsGameFinished(true); // End the game
+  //   } else if (finishedPlayers.includes(currentPlayerIndex)) {
+  //     // If the current player has finished, move to the next player
+  //     const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+  //     if (nextPlayer !== -1) {
+  //       setCurrentPlayerIndex(nextPlayer);
+  //     }
+  //   }
+  // };
+
+  const checkGameStatus = (newPositions) => {
+    // console.log("Checking game status...");
+    // console.log("Current Player Position:", newPositions[currentPlayerIndex]);
+    // console.log("Finished Players:", finishedPlayers);
+  
+    const newFinishedPlayers = [...finishedPlayers];
+  
+    // Check if the current player has reached 100
     if (
       newPositions[currentPlayerIndex] >= 100 &&
       !finishedPlayers.includes(currentPlayerIndex)
     ) {
+      //console.log("Player", currentPlayerIndex, "has reached 100!");
       newFinishedPlayers.push(currentPlayerIndex);
       setFinishedPlayers(newFinishedPlayers);
-      newPositions[currentPlayerIndex] = 100;
+      newPositions[currentPlayerIndex] = 100; // Ensure the player doesn't go beyond 100
     }
-
+  
+    // Check if all players have reached 100
     if (newFinishedPlayers.length === players.length) {
-      setIsGameFinished(true);
-    } else if (newFinishedPlayers.includes(currentPlayerIndex)) {
-      // Move to next player immediately
+      //console.log("All players have reached 100. Game over!");
+      setIsGameFinished(true); // End the game
+    } else if (finishedPlayers.includes(currentPlayerIndex)) {
+      // If the current player has finished, move to the next player
       const nextPlayer = findNextActivePlayer(currentPlayerIndex);
       if (nextPlayer !== -1) {
         setCurrentPlayerIndex(nextPlayer);
@@ -263,13 +376,61 @@ export default function GameBoardScreen({ route, navigation }) {
     return fullRotation ? -1 : nextIndex;
   };
 
+  // const rollDice = () => {
+  //   if (isMoving || finishedPlayers.includes(currentPlayerIndex) || isGameFinished) {
+  //     return;
+  //   }
+
+  //   setIsRolling(true);
+  //   const roll = 1;
+  //   //const roll = Math.floor(Math.random() * 6) + 1;
+  //   setDiceRoll(roll);
+
+  //   Animated.sequence([
+  //     Animated.timing(rotateAnimation, {
+  //       toValue: 1,
+  //       duration: 500,
+  //       useNativeDriver: true,
+  //     }),
+  //     Animated.timing(rotateAnimation, {
+  //       toValue: 0,
+  //       duration: 500,
+  //       useNativeDriver: true,
+  //     }),
+  //   ]).start(() => {
+  //     const startPos = playerPositions[currentPlayerIndex];
+  //     const endPos = startPos + roll;
+
+  //     // Check if the player can move without exceeding 100
+  //     if (endPos <= 100) {
+  //       animatePlayerMovement(startPos, endPos);
+  //     } else {
+  //       // Player cannot move, switch to the next player
+  //       const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+  //       if (nextPlayer !== -1) {
+  //         setCurrentPlayerIndex(nextPlayer);
+  //       }
+  //       setIsRolling(false);
+  //     }
+  //   });
+  // };
+
   const rollDice = () => {
-    if (isMoving || finishedPlayers.includes(currentPlayerIndex)) {
+    // Prevent rolling if:
+    // 1. The game is finished (`isGameFinished` is true)
+    // 2. The current player has already reached 100 (`finishedPlayers` includes `currentPlayerIndex`)
+    // 3. The player is currently moving (`isMoving` is true)
+    if (
+      isMoving ||
+      finishedPlayers.includes(currentPlayerIndex) ||
+      isGameFinished
+    ) {
       return;
     }
 
     setIsRolling(true);
-    const roll = Math.floor(Math.random() * 6) + 1;
+    const roll = 80;
+    //const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([
@@ -285,8 +446,19 @@ export default function GameBoardScreen({ route, navigation }) {
       }),
     ]).start(() => {
       const startPos = playerPositions[currentPlayerIndex];
-      const endPos = Math.min(startPos + roll, 100);
-      animatePlayerMovement(startPos, endPos);
+      const endPos =  startPos + roll;
+
+      // Check if the player can move without exceeding 100
+      if (endPos <= 100) {
+        animatePlayerMovement(startPos, endPos);
+      } else {
+        // Player cannot move, switch to the next player
+        const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+        if (nextPlayer !== -1) {
+          setCurrentPlayerIndex(nextPlayer);
+        }
+        setIsRolling(false);
+      }
     });
   };
 
@@ -322,21 +494,17 @@ export default function GameBoardScreen({ route, navigation }) {
     const randomCategory =
       categories[Math.floor(Math.random() * categories.length)];
 
-    // if(randomCategory === "Ghost"){
-    //   setSelectedCategoryImage(ghostImg);
-    // }
-    // else if(randomCategory === "Exercise"){
-    //   setSelectedCategoryImage(exerImg);
-    // }
-    // else if(randomCategory === "Dancing"){
-    //   setSelectedCategoryImage(danceImg);
-    // }
-    // else if(randomCategory === "FunnyTask"){
-    //   setSelectedCategoryImage(funnyImg);
-    // }
-    // else {
-    //   setSelectedCategoryImage(singImg);
-    // }
+    if (randomCategory === "Ghost") {
+      setSelectedCategoryImage(ghostImg);
+    } else if (randomCategory === "Exercise") {
+      setSelectedCategoryImage(exerImg);
+    } else if (randomCategory === "Dancing") {
+      setSelectedCategoryImage(danceImg);
+    } else if (randomCategory === "FunnyTask") {
+      setSelectedCategoryImage(funnyImg);
+    } else {
+      setSelectedCategoryImage(singImg);
+    }
     setSelectedCategoryImage(exerImg);
     const selectedCategoryData = tasks[environment][type][randomCategory];
     const selectedTasks = {
@@ -393,9 +561,9 @@ export default function GameBoardScreen({ route, navigation }) {
       setShowTaskModal(false);
       setShowRewardPenaltyModal(false);
       setShowMoves(true);
-      // setTimeout(() => {
-      //   setShowMoves(false);
-      // }, 3000);
+      setTimeout(() => {
+        setShowMoves(false);
+      }, 3000);
       setTimer(120);
       animatePlayerMovement(currentPos, newPosition, true);
     }
@@ -452,6 +620,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
       <View style={styles.bottomContainer}>
         <View style={styles.playerTurnContainer}>
+          {/* {renderPlayerCard()} */}
           <Animated.View
             style={[
               styles.playerCard,
@@ -476,14 +645,18 @@ export default function GameBoardScreen({ route, navigation }) {
             </View>
           </Animated.View>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={rollDice}
             disabled={
               isRolling ||
               isMoving ||
               finishedPlayers.includes(currentPlayerIndex)
             }
-            style={styles.diceWrapper}
+            style={[
+              styles.diceWrapper,
+              finishedPlayers.includes(currentPlayerIndex) &&
+                styles.disabledDice,
+            ]}
           >
             <Animated.View
               style={[
@@ -506,6 +679,55 @@ export default function GameBoardScreen({ route, navigation }) {
                 ? "Rolling..."
                 : isMoving
                 ? "Moving..."
+                : finishedPlayers.includes(currentPlayerIndex)
+                ? "Finished"
+                : isGameFinished
+                ? "Game Over"
+                : "Tap to Roll"}
+            </Text>
+          </TouchableOpacity> */}
+
+          <TouchableOpacity
+            onPress={rollDice}
+            disabled={
+              isRolling ||
+              isMoving ||
+              finishedPlayers.includes(currentPlayerIndex) ||
+              isGameFinished
+            }
+            style={[
+              styles.diceWrapper,
+              finishedPlayers.includes(currentPlayerIndex) || isGameFinished
+                ? styles.disabledDice
+                : null,
+            ]}
+          >
+            <Animated.View
+              style={[
+                styles.dice,
+                {
+                  transform: [{ rotate: rotation }],
+                  opacity:
+                    isRolling ||
+                    isMoving ||
+                    finishedPlayers.includes(currentPlayerIndex) ||
+                    isGameFinished
+                      ? 0.5
+                      : 1,
+                },
+              ]}
+            >
+              <DiceFace number={diceRoll} />
+            </Animated.View>
+            <Text style={styles.rollText}>
+              {isRolling
+                ? "Rolling..."
+                : isMoving
+                ? "Moving..."
+                : finishedPlayers.includes(currentPlayerIndex)
+                ? "Finished"
+                : isGameFinished
+                ? "Game Over"
                 : "Tap to Roll"}
             </Text>
           </TouchableOpacity>
@@ -702,11 +924,19 @@ export default function GameBoardScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  moves:{
-    height: '100%',
-    width: '100%',
-    fontSize:100,
-    textAlign: 'center'
+  finishedBadge: {
+    backgroundColor: "#48BB78",
+  },
+
+  disabledDice: {
+    opacity: 0.5,
+  },
+
+  moves: {
+    height: "100%",
+    width: "100%",
+    fontSize: 100,
+    textAlign: "center",
   },
   container: {
     flex: 1,
