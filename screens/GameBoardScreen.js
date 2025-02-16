@@ -29,6 +29,8 @@ const singImg = require("../assets/singing.gif");
 const danceImg = require("../assets/dancing.gif");
 const funnyImg = require("../assets/funny.gif");
 
+const { width, height } = Dimensions.get("window");
+
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
@@ -59,7 +61,7 @@ export default function GameBoardScreen({ route, navigation }) {
   const [extraMoves, setExtraMoves] = useState(null);
   const [showMoves, setShowMoves] = useState(false);
   const boardSize = 100;
-  const { width } = Dimensions.get("window");
+  
   const squareSize = 38;
 
   const generateRandomGiftPositions = () => {
@@ -263,7 +265,7 @@ export default function GameBoardScreen({ route, navigation }) {
         newPositions[currentPlayerIndex] = currentPosition;
         setPlayerPositions(newPositions);
   
-        setTimeout(moveOneStep, 10);
+        setTimeout(moveOneStep, 300);
       } else {
         setIsMoving(false);
   
@@ -429,8 +431,8 @@ export default function GameBoardScreen({ route, navigation }) {
     }
 
     setIsRolling(true);
-    const roll = 80;
-    //const roll = Math.floor(Math.random() * 6) + 1;
+    //const roll = 1;
+    const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([
@@ -555,7 +557,7 @@ export default function GameBoardScreen({ route, navigation }) {
       }
       console.log(move);
       setExtraMoves(move);
-      console.log(extraMoves);
+      //console.log(extraMoves);
       const newPosition = Math.max(1, Math.min(currentPos + move, 100));
 
       setShowTaskModal(false);
@@ -563,9 +565,10 @@ export default function GameBoardScreen({ route, navigation }) {
       setShowMoves(true);
       setTimeout(() => {
         setShowMoves(false);
+        animatePlayerMovement(currentPos, newPosition, true);
       }, 3000);
       setTimer(120);
-      animatePlayerMovement(currentPos, newPosition, true);
+      
     }
   };
 
@@ -933,16 +936,18 @@ const styles = StyleSheet.create({
   },
 
   moves: {
-    height: "100%",
-    width: "100%",
-    fontSize: 100,
+    height: height - '90%',
+    width: width - '30%',
+    fontWeight:"bold",
+    fontSize: 160,
+    color:'white',
     textAlign: "center",
   },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1a365d",
+    backgroundColor: "#1a365d"
   },
   gradientBackground: {
     flex: 1,
@@ -1018,7 +1023,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 5,
     overflow: "hidden",
-    padding: 0,
+    //padding: 0,
   },
   square: {
     justifyContent: "center",
@@ -1201,7 +1206,7 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 1,
     display: "flex",
     flexDirection: "row",
     backgroundColor: "#2d3748",

@@ -5,148 +5,149 @@ export const tasks = {
     Truth: {
       Ghost: {
         Easy: [
-          "Have you ever broken something and blamed someone else?",
-          "What’s the most embarrassing thing your parents have caught you doing?"
+          "Have you ever felt a supernatural presence around you?",
+          "Do you believe in ghosts? Why or why not?"
         ],
         Medium: [
-          "What’s your most annoying habit at home?",
-          "What’s the worst mess you've made at home?"
+          "Have you ever experienced something creepy that you couldn’t explain?",
+          "What’s the scariest ghost story you’ve ever heard?"
         ],
         Hard: [
-          "What’s the most awkward moment you’ve had with a family member?",
-          "What’s something you’ve done that your family would be shocked to know about?"
+          "Have you ever used a Ouija board? What happened?",
+          "Would you ever spend a night alone in a haunted house? Why or why not?"
         ]
       },
       Exercise: {
         Easy: [
-          "Do 10 push-ups right now.",
-          "Dance in the living room for 30 seconds."
+          "Have you ever faked an injury to avoid exercise?",
+          "What’s the laziest thing you’ve ever done to avoid working out?"
         ],
         Medium: [
-          "Pretend to be a waiter and take someone’s order.",
-          "Do 20 squats while saying your ABCs out loud."
+          "What’s the most embarrassing thing that happened to you while exercising?",
+          "Have you ever quit a workout halfway through? What happened?"
         ],
         Hard: [
-          "Pretend to be a character from a movie and act like them for 3 minutes.",
-          "Call someone and leave them a voicemail pretending to be a robot."
+          "Have you ever competed in a physical challenge and failed miserably?",
+          "What’s your biggest fitness-related regret?"
         ]
       },
       Dancing: {
         Easy: [
-          "Dance for 1 minute without music.",
-          "Do the chicken dance for 1 minute."
+          "Have you ever danced alone in front of a mirror?",
+          "What’s the weirdest dance move you’ve ever tried?"
         ],
         Medium: [
-          "Dance like no one’s watching for 1 minute.",
-          "Pretend to be a famous dancer and do your best moves."
+          "Have you ever been caught dancing when you thought no one was watching?",
+          "What’s the most embarrassing thing that’s happened to you while dancing?"
         ],
         Hard: [
-          "Do a 2-minute dance routine in front of the class.",
-          "Pretend to be a famous pop star and do a 2-minute performance."
+          "Have you ever performed a dance in public and regretted it?",
+          "What’s the worst dance fail you’ve ever witnessed or experienced?"
         ]
       },
       Singing: {
         Easy: [
-          "Sing a song loudly for 1 minute.",
-          "Sing 'Happy Birthday' to someone, even if it’s not their birthday."
+          "What’s your go-to song to sing in the shower?",
+          "Have you ever sung in public and embarrassed yourself?"
         ],
         Medium: [
-          "Sing the school anthem as loud as you can.",
-          "Sing a random song in a funny voice for 2 minutes."
+          "What’s the worst karaoke performance you’ve ever done?",
+          "Have you ever had a voice crack while singing? What happened?"
         ],
         Hard: [
-          "Do an impromptu karaoke session for 3 minutes.",
-          "Sing a random song loudly for 2 minutes."
+          "Have you ever been booed or laughed at while singing?",
+          "What’s the most embarrassing song you’ve ever had stuck in your head?"
         ]
       },
       FunnyTask: {
         Easy: [
-          "Do your best impression of a celebrity for 2 minutes.",
-          "Talk in a funny accent for the next 5 minutes."
+          "What’s the funniest prank you’ve ever pulled?",
+          "Have you ever laughed so hard you cried? What caused it?"
         ],
         Medium: [
-          "Pretend you're a famous actor and do a 2-minute monologue.",
-          "Act like a character from a movie for 3 minutes."
+          "What’s the silliest thing you’ve ever done to make someone laugh?",
+          "Have you ever embarrassed yourself while trying to be funny?"
         ],
         Hard: [
-          "Do your best impression of a famous character for 3 minutes.",
-          "Give a 1-minute motivational speech to your family."
+          "What’s the most ridiculous bet or dare you’ve ever accepted?",
+          "Have you ever made a joke that completely backfired?"
         ]
       }
     },
     Dare: {
       Ghost: {
         Easy: [
-          "Pretend you're a ghost and scare someone.",
-          "Talk like a ghost for 3 minutes."
+          "Walk around the room pretending to be a ghost for 2 minutes.",
+          "Tell a scary story in a whispering voice."
         ],
         Medium: [
-          "Pretend you’re a ghost and haunt the house for 2 minutes.",
-          "Do your best ghost impersonation and scare someone."
+          "Hide somewhere and jump out to scare the next person who enters the room.",
+          "Turn off the lights and make creepy ghost sounds for 1 minute."
         ],
         Hard: [
-          "Pretend you're a ghost and haunt the house for 5 minutes.",
-          "Do your best ghost impersonation for 3 minutes."
+          "Go outside alone for 5 minutes and act as if you see ghosts.",
+          "Pretend to be possessed by a ghost for 2 minutes."
         ]
       },
       Exercise: {
         Easy: [
-          "Do 20 squats right now.",
-          "Do 10 push-ups in front of the class."
+          "Do 5 burpees in slow motion.",
+          "Hold a squat position for 30 seconds while making funny faces."
         ],
         Medium: [
-          "Do 15 jumping jacks in a row.",
-          "Pretend to be an exercise instructor for 2 minutes."
+          "Do 10 jumping jacks while singing a song.",
+          "Perform lunges around the entire room."
         ],
         Hard: [
-          "Do 30 squats in a row.",
-          "Pretend you're a fitness guru and lead a workout session."
+          "Do 10 push-ups while clapping in between each rep.",
+          "Hold a plank for 1 minute while someone tells jokes to make you laugh."
         ]
       },
       Dancing: {
         Easy: [
-          "Dance for 1 minute without music.",
-          "Do a silly dance for 1 minute."
+          "Do a dance move from TikTok.",
+          "Perform the robot dance for 30 seconds."
         ],
         Medium: [
-          "Pretend you're a famous dancer and do your best moves.",
-          "Do a 1-minute random dance routine."
+          "Do an interpretative dance of how you feel right now.",
+          "Dance using only your hands and head for 1 minute."
         ],
         Hard: [
-          "Dance for 2 minutes like you're in a dance battle.",
-          "Pretend to be a famous pop star and dance for 2 minutes."
+          "Recreate a famous dance scene from a movie.",
+          "Freestyle dance for 2 minutes like you’re on a reality show."
         ]
       },
       Singing: {
         Easy: [
-          "Sing 'Happy Birthday' to someone, even if it’s not their birthday.",
-          "Sing your favorite song loudly for 1 minute."
+          "Sing a nursery rhyme in a dramatic way.",
+          "Sing a song using only gibberish lyrics."
         ],
         Medium: [
-          "Do an impromptu karaoke session for 2 minutes.",
-          "Sing a random song in a funny voice for 2 minutes."
+          "Sing a song as if you’re in an opera.",
+          "Make up a song about the person to your right and sing it."
         ],
         Hard: [
-          "Do an impromptu karaoke session for 5 minutes.",
-          "Sing in a different accent for 2 minutes."
+          "Perform an emotional rendition of a song while lying on the floor.",
+          "Sing an entire song in an exaggerated country or opera accent."
         ]
       },
       FunnyTask: {
         Easy: [
-          "Do an impression of your boss for 2 minutes.",
-          "Talk like a robot for 3 minutes."
+          "Act like a monkey for 1 minute.",
+          "Talk like a pirate for 2 minutes."
         ],
         Medium: [
-          "Pretend you're your boss for 3 minutes.",
-          "Act like a famous actor for 2 minutes."
+          "Do your best impression of a famous cartoon character.",
+          "Narrate everything someone else does in a dramatic way."
         ],
         Hard: [
-          "Give a 1-minute motivational speech as if you're the CEO.",
-          "Do your best celebrity impression for 3 minutes."
+          "Give an over-the-top motivational speech about something silly.",
+          "Act like a superhero and describe your superpowers dramatically."
         ]
       }
     }
   },
+
   Party: {
     Truth: {
       Ghost: {
@@ -293,6 +294,7 @@ export const tasks = {
       }
     }
   },
+  
   School: {
     Truth: {
       Ghost: {
@@ -440,175 +442,3 @@ export const tasks = {
     }
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export const tasks = {
-//     Home: {
-//       truth: {
-//         Easy: [
-//           "Have you ever broken something and blamed someone else?",
-//           "What's the most embarrassing thing your parents have caught you doing?",
-//           "What's your favorite TV show to watch when no one is around?"
-//         ],
-//         Medium: [
-//           "What’s your most annoying habit at home?",
-//           "Have you ever lied to get out of doing chores?",
-//           "What’s the worst mess you've made at home?"
-//         ],
-//         Hard: [
-//           "What’s the most awkward moment you’ve had with a family member?",
-//           "Have you ever hidden food from someone at home?",
-//           "What’s something you’ve done that your family would be shocked to know about?"
-//         ]
-//       },
-//       dare: {
-//         Easy: [
-//           "Sing a song loudly for 1 minute.",
-//           "Do 10 push-ups right now.",
-//           "Dance in the living room for 30 seconds."
-//         ],
-//         Medium: [
-//           "Pretend to be a waiter and take someone’s order.",
-//           "Send a random emoji to your mom/dad.",
-//           "Post a silly video of you doing something random in the house."
-//         ],
-//         Hard: [
-//           "Do 20 squats while saying your ABCs out loud.",
-//           "Pretend to be a character from a movie and act like them for 3 minutes.",
-//           "Call someone and leave them a voicemail pretending to be a robot."
-//         ]
-//       }
-//     },
-//     Office: {
-//       truth: {
-//         Easy: [
-//           "Have you ever taken credit for someone else's work?",
-//           "What's the worst excuse you've used for missing a deadline?",
-//           "Do you ever gossip about your coworkers?"
-//         ],
-//         Medium: [
-//           "Have you ever snoozed through a meeting?",
-//           "What's the most awkward office moment you've had?",
-//           "Have you ever accidentally sent an email to the wrong person?"
-//         ],
-//         Hard: [
-//           "Have you ever been caught sleeping at work?",
-//           "What's the most embarrassing thing you’ve done in front of your boss?",
-//           "Have you ever pretended to know how to do something at work when you had no idea?"
-//         ]
-//       },
-//       dare: {
-//         Easy: [
-//           "Send a funny meme to your manager.",
-//           "Speak in a robot voice for the next 5 minutes.",
-//           "Do your best office chair spin for 30 seconds."
-//         ],
-//         Medium: [
-//           "Pretend you're answering a very important call and have a fake conversation.",
-//           "Send a compliment to a random coworker.",
-//           "Act like a boss for 3 minutes."
-//         ],
-//         Hard: [
-//           "Give a 1-minute motivational speech to your team.",
-//           "Go to a coworker and give them a high five in the most exaggerated way possible.",
-//           "Do your best impression of your boss for 2 minutes."
-//         ]
-//       }
-//     },
-//     Party: {
-//       truth: {
-//         Easy: [
-//           "Have you ever kissed someone at a party?",
-//           "What's the wildest thing you've done at a party?",
-//           "Have you ever been caught sneaking into a party?"
-//         ],
-//         Medium: [
-//           "What’s the most embarrassing thing you’ve done while drunk?",
-//           "Have you ever lied about your age to get into a party?",
-//           "What’s the most shocking thing you've overheard at a party?"
-//         ],
-//         Hard: [
-//           "Have you ever regretted a decision made at a party?",
-//           "What's the most outrageous thing you've seen someone do at a party?",
-//           "What’s the longest you’ve stayed at a party, even though you wanted to leave?"
-//         ]
-//       },
-//       dare: {
-//         Easy: [
-//           "Dance for 1 minute without music.",
-//           "Take a silly selfie and post it on social media.",
-//           "Do your best party animal impression for 30 seconds."
-//         ],
-//         Medium: [
-//           "Pretend to be the life of the party for the next 3 minutes.",
-//           "Give an impromptu toast as if you're hosting the party.",
-//           "Do the chicken dance in front of everyone."
-//         ],
-//         Hard: [
-//           "Pretend to be the DJ for the next 2 songs.",
-//           "Call a friend and sing happy birthday to them, even if it’s not their birthday.",
-//           "Do your best impression of a celebrity for 2 minutes."
-//         ]
-//       }
-//     },
-//     School: {
-//       truth: {
-//         Easy: [
-//           "Have you ever cheated on a test?",
-//           "What's the most embarrassing thing that's happened to you in class?",
-//           "Have you ever been caught texting in class?"
-//         ],
-//         Medium: [
-//           "What’s the worst excuse you’ve given for not doing homework?",
-//           "Have you ever gotten in trouble for something silly at school?",
-//           "Have you ever skipped school for a silly reason?"
-//         ],
-//         Hard: [
-//           "Have you ever gotten caught passing notes in class?",
-//           "What’s the most embarrassing thing you’ve done to get attention in class?",
-//           "Have you ever been sent to the principal’s office?"
-//         ]
-//       },
-//       dare: {
-//         Easy: [
-//           "Talk in a funny accent for the next 5 minutes.",
-//           "Act like a teacher for the next 2 minutes.",
-//           "Do 10 jumping jacks while reciting the alphabet backwards."
-//         ],
-//         Medium: [
-//           "Pretend to be a student who's late for class and run to the imaginary classroom.",
-//           "Start a fake debate with someone about which subject is the hardest.",
-//           "Sing the school anthem as loud as you can."
-//         ],
-//         Hard: [
-//           "Pretend you're a teacher and give a 1-minute lecture on a random topic.",
-//           "Do a cartwheel or other physical stunt in front of the class.",
-//           "Give a speech as if you were running for school president."
-//         ]
-//       }
-//     }
-//   };
-  
