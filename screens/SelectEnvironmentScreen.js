@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { stopMusic } from '../Data/MusicService'; // Import stopMusic from MusicService
 
 const { width, height } = Dimensions.get('window');
 
@@ -8,6 +9,12 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
     const { players } = route.params;
     const [selectedEnv, setSelectedEnv] = useState(null);
     const [scaleAnim] = useState(new Animated.Value(1));
+
+    useEffect(() => {
+        return () => {
+          stopMusic(); // Stop music when navigating to GameBoardScreen
+        };
+      }, []);
 
     const environments = [
         { name: 'Home', icon: '🏠', description: 'Casual and comfortable setting', gradient: ['#2193b0', '#6dd5ed'] },

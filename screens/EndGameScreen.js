@@ -1,12 +1,55 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Audio } from 'expo-av'; // Import Audio for background music
+import { useRef } from 'react';
 
 export default function EndGameScreen({ route, navigation }) {
   const { players } = route.params;
+  //const [sound, setSound] = React.useState(); // To manage the sound object
   const sortedPlayers = players.sort((a, b) => a.finalPosition - b.finalPosition);
   const scaleAnim = new Animated.Value(0);
   const fadeAnim = new Animated.Value(0);
+  const musicSound = useRef(new Audio.Sound()); // To keep track of the audio
+
+  // Handle Play Again
+  const handlePlayAgain = () => {
+    musicSound.current.stopAsync();  // Stop the audio immediately
+    musicSound.current.unloadAsync(); // Unload the audio to avoid it continuing to play in the background
+    navigation.navigate("Home");  // Navigate to Home or the appropriate screen
+  };
+
+  useEffect(() => {
+    // Load and play music when the screen loads
+    async function playMusic() {
+      try {
+        await musicSound.current.loadAsync(require('../assets/end_game.mp3'));
+        await musicSound.current.playAsync();
+      } catch (error) {
+        console.log('Error loading audio: ', error);
+      }
+    }
+
+    playMusic();
+
+    // Cleanup the music when the screen is unmounted or when navigating away
+    return () => {
+      musicSound.current.stopAsync();
+      musicSound.current.unloadAsync(); // Proper cleanup
+    };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Stop the audio before navigating away
+      musicSound.current.stopAsync();
+      musicSound.current.unloadAsync();
+    });
+
+    // Cleanup the listener when the component unmounts
+    return unsubscribe;
+  }, [navigation]);
+
 
   useEffect(() => {
     Animated.parallel([
@@ -101,29 +144,10 @@ export default function EndGameScreen({ route, navigation }) {
           </LinearGradient>
         </View>
 
-        <View style={styles.highlightsContainer}>
-          <Text style={styles.highlightsTitle}>✨ Game Highlights ✨</Text>
-          {gameHighlights.map((highlight, index) => (
-            <LinearGradient
-              key={index}
-              colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
-              style={styles.highlightCard}
-            >
-              <View style={styles.highlightIconContainer}>
-                <Text style={styles.highlightIcon}>{highlight.icon}</Text>
-              </View>
-              <View style={styles.highlightContent}>
-                <Text style={styles.highlightTitle}>{highlight.title}</Text>
-                <Text style={styles.highlightPlayer}>{highlight.player}</Text>
-              </View>
-            </LinearGradient>
-          ))}
-        </View>
-
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.playAgainButton]}
-            onPress={() => navigation.navigate("Home")}
+            onPress={handlePlayAgain}
           >
             <LinearGradient
               colors={['#00b09b', '#96c93d']}
@@ -145,6 +169,25 @@ export default function EndGameScreen({ route, navigation }) {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.highlightsContainer}>
+          <Text style={styles.highlightsTitle}>✨ Game Highlights ✨</Text>
+          {gameHighlights.map((highlight, index) => (
+            <LinearGradient
+              key={index}
+              colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+              style={styles.highlightCard}
+            >
+              <View style={styles.highlightIconContainer}>
+                <Text style={styles.highlightIcon}>{highlight.icon}</Text>
+              </View>
+              <View style={styles.highlightContent}>
+                <Text style={styles.highlightTitle}>{highlight.title}</Text>
+                <Text style={styles.highlightPlayer}>{highlight.player}</Text>
+              </View>
+            </LinearGradient>
+          ))}
+        </View>
       </ScrollView>
     </LinearGradient>
   );
@@ -160,7 +203,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginTop: 20,
   },
   heading: {
     fontSize: 36,

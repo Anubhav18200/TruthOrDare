@@ -5,8 +5,8 @@ import HomeScreen from '../screens/HomeScreen';
 import AddPlayersScreen from '../screens/AddPlayersScreen';
 import SelectEnvironmentScreen from '../screens/SelectEnvironmentScreen';
 import GameBoardScreen from '../screens/GameBoardScreen';
-import TruthOrDareScreen from '../screens/TruthOrDareScreen';
 import EndGameScreen from '../screens/EndGameScreen';
+import GameRulesScreen from '../screens/GameRulesScreen'; 
 
 
 const Stack = createStackNavigator();
@@ -19,8 +19,8 @@ export default function AppNavigator() {
         <Stack.Screen name="AddPlayers" component={AddPlayersScreen} />
         <Stack.Screen name="SelectEnvironment" component={SelectEnvironmentScreen} />
         <Stack.Screen name="GameBoard" component={GameBoardScreen} />
-        {/* <Stack.Screen name="TruthOrDare" component={TruthOrDareScreen} /> */}
         <Stack.Screen name="EndGame" component={EndGameScreen} />
+        <Stack.Screen name="GameRules" component={GameRulesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { tasks } from "../Data/tasksData.js";
 import { Image } from "expo-image";
+import { Audio } from "expo-av";
+import { stopMusic } from "../Data/MusicService"; // Import stopMusic from MusicService
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -60,8 +62,17 @@ export default function GameBoardScreen({ route, navigation }) {
   const [pulseAnimation] = useState(new Animated.Value(1));
   const [extraMoves, setExtraMoves] = useState(null);
   const [showMoves, setShowMoves] = useState(false);
+
+  // State for sounds
+  const [diceSound, setDiceSound] = useState(null);
+  const [movementSound, setMovementSound] = useState(null);
+  const [rewardSound, setRewardSound] = useState(null);
+  const [penaltySound, setPenaltySound] = useState(null);
+
+  const [truthCounts, setTruthCounts] = useState(Array(players.length).fill(0));
+
   const boardSize = 100;
-  
+
   const squareSize = 38;
 
   const generateRandomGiftPositions = () => {
@@ -118,6 +129,50 @@ export default function GameBoardScreen({ route, navigation }) {
 
     return <View style={styles.face}>{renderDots(number)}</View>;
   };
+
+  useEffect(() => {
+    stopMusic(); // Stop music when the screen is loaded
+  }, []);
+
+  // Load sounds when the component mounts
+  useEffect(() => {
+    const loadSounds = async () => {
+      const { sound: dice } = await Audio.Sound.createAsync(
+        require("../assets/dice.mp3")
+      );
+      const { sound: movement } = await Audio.Sound.createAsync(
+        require("../assets/p_icon_sound.wav")
+      );
+      const { sound: reward } = await Audio.Sound.createAsync(
+        require("../assets/victory.wav")
+      );
+      const { sound: penalty } = await Audio.Sound.createAsync(
+        require("../assets/lost.wav")
+      );
+      setDiceSound(dice);
+      setMovementSound(movement);
+      setRewardSound(reward);
+      setPenaltySound(penalty);
+    };
+
+    loadSounds();
+
+    // Cleanup sounds when the component unmounts
+    return () => {
+      if (diceSound) {
+        diceSound.unloadAsync();
+      }
+      if (movementSound) {
+        movementSound.unloadAsync();
+      }
+      if (rewardSound) {
+        rewardSound.unloadAsync();
+      }
+      if (penaltySound) {
+        penaltySound.unloadAsync();
+      }
+    };
+  }, []);
 
   // Add pulse animation effect
   useEffect(() => {
@@ -177,85 +232,12 @@ export default function GameBoardScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [showTaskModal, timer, showCategoryImage]);
 
-  // const animatePlayerMovement = (startPos, endPos, isReward = false) => {
-  //   setIsMoving(true);
-  //   let currentPosition = startPos;
-  //   const direction = endPos > startPos ? 1 : -1;
-
-  //   const moveOneStep = () => {
-  //     if (
-  //       (direction === 1 && currentPosition < endPos) ||
-  //       (direction === -1 && currentPosition > endPos)
-  //     ) {
-  //       currentPosition += direction;
-  //       const newPositions = [...playerPositions];
-  //       newPositions[currentPlayerIndex] = currentPosition;
-  //       setPlayerPositions(newPositions);
-
-  //       setTimeout(moveOneStep, 10);
-  //     } else {
-  //       setIsMoving(false);
-  //       checkGameStatus([...playerPositions]);
-
-  //       // Check if player landed on a gift and this wasn't a reward movement
-  //       if (randomGiftPositions.includes(endPos) && !isReward) {
-  //         const randomChoice = Math.floor(Math.random() * 2);
-  //         setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
-  //         setShowRewardPenaltyModal(true);
-  //         setTimeout(() => {
-  //           setShowRewardPenaltyModal(false);
-  //           setShowTruthDareModal(true);
-  //         }, 3000);
-  //       } else if (randomGiftPositions.includes(endPos) && isReward) {
-  //         // If landed on a gift after a reward movement, trigger another task
-  //         setShowRewardPenaltyModal(true);
-  //         setTimeout(() => {
-  //           setShowRewardPenaltyModal(false);
-  //           setShowTruthDareModal(true);
-  //         }, 3000);
-  //       } else {
-  //         // No gift encountered, move to next player
-  //         const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-  //         if (nextPlayer !== -1) {
-  //           setCurrentPlayerIndex(nextPlayer);
-  //         }
-  //         setIsRolling(false);
-  //       }
-  //     }
-  //   };
-
-  //   moveOneStep();
-  // };
-
-  // const checkGameStatus = (newPositions) => {
-  //   const newFinishedPlayers = [...finishedPlayers];
-
-  //   if (
-  //     newPositions[currentPlayerIndex] >= 100 &&
-  //     !finishedPlayers.includes(currentPlayerIndex)
-  //   ) {
-  //     newFinishedPlayers.push(currentPlayerIndex);
-  //     setFinishedPlayers(newFinishedPlayers);
-  //     newPositions[currentPlayerIndex] = 100;
-  //   }
-
-  //   if (newFinishedPlayers.length === players.length) {
-  //     setIsGameFinished(true);
-  //   } else if (newFinishedPlayers.includes(currentPlayerIndex)) {
-  //     // Move to next player immediately
-  //     const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-  //     if (nextPlayer !== -1) {
-  //       setCurrentPlayerIndex(nextPlayer);
-  //     }
-  //   }
-  // };
-
-  const animatePlayerMovement = (startPos, endPos, isReward = false) => {
+  const animatePlayerMovement = async (startPos, endPos, isReward = false) => {
     setIsMoving(true);
     let currentPosition = startPos;
     const direction = endPos > startPos ? 1 : -1;
-  
-    const moveOneStep = () => {
+
+    const moveOneStep = async () => {
       if (
         (direction === 1 && currentPosition < endPos) ||
         (direction === -1 && currentPosition > endPos)
@@ -264,24 +246,37 @@ export default function GameBoardScreen({ route, navigation }) {
         const newPositions = [...playerPositions];
         newPositions[currentPlayerIndex] = currentPosition;
         setPlayerPositions(newPositions);
-  
+
+        // Play player movement sound for each step
+        if (movementSound) {
+          await movementSound.replayAsync();
+        }
+
         setTimeout(moveOneStep, 300);
       } else {
         setIsMoving(false);
-  
+
         // Update the player's position and check if they have reached 100
         const newPositions = [...playerPositions];
         newPositions[currentPlayerIndex] = currentPosition;
         setPlayerPositions(newPositions);
-  
+
         // Call checkGameStatus to update the game state
         checkGameStatus(newPositions);
-  
+
         // Check if player landed on a gift and this wasn't a reward movement
         if (randomGiftPositions.includes(endPos) && !isReward) {
-          const randomChoice = Math.floor(Math.random() * 2);
+          //const randomChoice = Math.floor(Math.random() * 2);
+          const randomChoice = 0;
           setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
           setShowRewardPenaltyModal(true);
+
+          // Play reward or penalty sound
+          if (randomChoice === 0 && rewardSound) {
+            await rewardSound.replayAsync();
+          } else if (penaltySound) {
+            await penaltySound.replayAsync();
+          }
           setTimeout(() => {
             setShowRewardPenaltyModal(false);
             setShowTruthDareModal(true);
@@ -303,42 +298,17 @@ export default function GameBoardScreen({ route, navigation }) {
         }
       }
     };
-  
+
     moveOneStep();
   };
-
-  // const checkGameStatus = (newPositions) => {
-  //   const newFinishedPlayers = [...finishedPlayers];
-
-  //   // Check if the current player has reached 100
-  //   if (
-  //     newPositions[currentPlayerIndex] >= 100 &&
-  //     !finishedPlayers.includes(currentPlayerIndex)
-  //   ) {
-  //     newFinishedPlayers.push(currentPlayerIndex);
-  //     setFinishedPlayers(newFinishedPlayers);
-  //     newPositions[currentPlayerIndex] = 100; // Ensure the player doesn't go beyond 100
-  //   }
-
-  //   // Check if all players have reached 100
-  //   if (newFinishedPlayers.length === players.length) {
-  //     setIsGameFinished(true); // End the game
-  //   } else if (finishedPlayers.includes(currentPlayerIndex)) {
-  //     // If the current player has finished, move to the next player
-  //     const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-  //     if (nextPlayer !== -1) {
-  //       setCurrentPlayerIndex(nextPlayer);
-  //     }
-  //   }
-  // };
 
   const checkGameStatus = (newPositions) => {
     // console.log("Checking game status...");
     // console.log("Current Player Position:", newPositions[currentPlayerIndex]);
     // console.log("Finished Players:", finishedPlayers);
-  
+
     const newFinishedPlayers = [...finishedPlayers];
-  
+
     // Check if the current player has reached 100
     if (
       newPositions[currentPlayerIndex] >= 100 &&
@@ -349,7 +319,7 @@ export default function GameBoardScreen({ route, navigation }) {
       setFinishedPlayers(newFinishedPlayers);
       newPositions[currentPlayerIndex] = 100; // Ensure the player doesn't go beyond 100
     }
-  
+
     // Check if all players have reached 100
     if (newFinishedPlayers.length === players.length) {
       //console.log("All players have reached 100. Game over!");
@@ -378,46 +348,7 @@ export default function GameBoardScreen({ route, navigation }) {
     return fullRotation ? -1 : nextIndex;
   };
 
-  // const rollDice = () => {
-  //   if (isMoving || finishedPlayers.includes(currentPlayerIndex) || isGameFinished) {
-  //     return;
-  //   }
-
-  //   setIsRolling(true);
-  //   const roll = 1;
-  //   //const roll = Math.floor(Math.random() * 6) + 1;
-  //   setDiceRoll(roll);
-
-  //   Animated.sequence([
-  //     Animated.timing(rotateAnimation, {
-  //       toValue: 1,
-  //       duration: 500,
-  //       useNativeDriver: true,
-  //     }),
-  //     Animated.timing(rotateAnimation, {
-  //       toValue: 0,
-  //       duration: 500,
-  //       useNativeDriver: true,
-  //     }),
-  //   ]).start(() => {
-  //     const startPos = playerPositions[currentPlayerIndex];
-  //     const endPos = startPos + roll;
-
-  //     // Check if the player can move without exceeding 100
-  //     if (endPos <= 100) {
-  //       animatePlayerMovement(startPos, endPos);
-  //     } else {
-  //       // Player cannot move, switch to the next player
-  //       const nextPlayer = findNextActivePlayer(currentPlayerIndex);
-  //       if (nextPlayer !== -1) {
-  //         setCurrentPlayerIndex(nextPlayer);
-  //       }
-  //       setIsRolling(false);
-  //     }
-  //   });
-  // };
-
-  const rollDice = () => {
+  const rollDice = async () => {
     // Prevent rolling if:
     // 1. The game is finished (`isGameFinished` is true)
     // 2. The current player has already reached 100 (`finishedPlayers` includes `currentPlayerIndex`)
@@ -431,8 +362,11 @@ export default function GameBoardScreen({ route, navigation }) {
     }
 
     setIsRolling(true);
-    //const roll = 1;
-    const roll = Math.floor(Math.random() * 6) + 1;
+    if (diceSound) {
+      await diceSound.replayAsync();
+    }
+    const roll = 1;
+    //const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([
@@ -448,7 +382,7 @@ export default function GameBoardScreen({ route, navigation }) {
       }),
     ]).start(() => {
       const startPos = playerPositions[currentPlayerIndex];
-      const endPos =  startPos + roll;
+      const endPos = startPos + roll;
 
       // Check if the player can move without exceeding 100
       if (endPos <= 100) {
@@ -490,35 +424,95 @@ export default function GameBoardScreen({ route, navigation }) {
     }
   };
 
+  // const handleTruthDareSelection = (type) => {
+  //   setSelectedType(type);
+  //   const categories = Object.keys(tasks[environment][type]);
+  //   const randomCategory =
+  //     categories[Math.floor(Math.random() * categories.length)];
+
+  //   if (randomCategory === "Ghost") {
+  //     setSelectedCategoryImage(ghostImg);
+  //   } else if (randomCategory === "Exercise") {
+  //     setSelectedCategoryImage(exerImg);
+  //   } else if (randomCategory === "Dancing") {
+  //     setSelectedCategoryImage(danceImg);
+  //   } else if (randomCategory === "FunnyTask") {
+  //     setSelectedCategoryImage(funnyImg);
+  //   } else {
+  //     setSelectedCategoryImage(singImg);
+  //   }
+  //   setSelectedCategoryImage(exerImg);
+  //   const selectedCategoryData = tasks[environment][type][randomCategory];
+  //   const selectedTasks = {
+  //     Easy: getRandomTask(selectedCategoryData.Easy),
+  //     Medium: getRandomTask(selectedCategoryData.Medium),
+  //     Hard: getRandomTask(selectedCategoryData.Hard),
+  //   };
+
+  //   setRandomTasks(selectedTasks);
+  //   setSelectedCategory(randomCategory);
+  //   setShowTruthDareModal(false);
+  //   setShowDifficultyModal(true);
+  // };
+
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
-    const categories = Object.keys(tasks[environment][type]);
-    const randomCategory =
-      categories[Math.floor(Math.random() * categories.length)];
 
-    if (randomCategory === "Ghost") {
-      setSelectedCategoryImage(ghostImg);
-    } else if (randomCategory === "Exercise") {
-      setSelectedCategoryImage(exerImg);
-    } else if (randomCategory === "Dancing") {
-      setSelectedCategoryImage(danceImg);
-    } else if (randomCategory === "FunnyTask") {
-      setSelectedCategoryImage(funnyImg);
+    if (type === "Truth") {
+      // Check if the player has already taken 3 truths
+      if (truthCounts[currentPlayerIndex] >= 3) {
+        alert("You have already taken 3 truths. Please choose Dare.");
+        return;
+      }
+
+      // Select a random player to ask the question (excluding the current player)
+      const otherPlayers = players.filter(
+        (_, index) => index !== currentPlayerIndex
+      );
+      const randomPlayer =
+        otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+
+      // Set the task modal text
+      setCurrentTask({
+        type: "Truth",
+        task: `${randomPlayer.name} will ask you the question.`,
+      });
+
+      // Show the task modal directly
+      setShowTruthDareModal(false);
+      setShowTaskModal(true);
+      setTimer(120);
     } else {
-      setSelectedCategoryImage(singImg);
-    }
-    setSelectedCategoryImage(exerImg);
-    const selectedCategoryData = tasks[environment][type][randomCategory];
-    const selectedTasks = {
-      Easy: getRandomTask(selectedCategoryData.Easy),
-      Medium: getRandomTask(selectedCategoryData.Medium),
-      Hard: getRandomTask(selectedCategoryData.Hard),
-    };
+      // For Dare, proceed as before
+      const categories = Object.keys(tasks[environment][type]);
+      const randomCategory =
+        categories[Math.floor(Math.random() * categories.length)];
 
-    setRandomTasks(selectedTasks);
-    setSelectedCategory(randomCategory);
-    setShowTruthDareModal(false);
-    setShowDifficultyModal(true);
+      // Set the category image
+      if (randomCategory === "Ghost") {
+        setSelectedCategoryImage(ghostImg);
+      } else if (randomCategory === "Exercise") {
+        setSelectedCategoryImage(exerImg);
+      } else if (randomCategory === "Dancing") {
+        setSelectedCategoryImage(danceImg);
+      } else if (randomCategory === "FunnyTask") {
+        setSelectedCategoryImage(funnyImg);
+      } else {
+        setSelectedCategoryImage(singImg);
+      }
+
+      const selectedCategoryData = tasks[environment][type][randomCategory];
+      const selectedTasks = {
+        Easy: getRandomTask(selectedCategoryData.Easy),
+        Medium: getRandomTask(selectedCategoryData.Medium),
+        Hard: getRandomTask(selectedCategoryData.Hard),
+      };
+
+      setRandomTasks(selectedTasks);
+      setSelectedCategory(randomCategory);
+      setShowTruthDareModal(false);
+      setShowDifficultyModal(true);
+    }
   };
 
   const getRandomTask = (tasksArray) => {
@@ -542,11 +536,54 @@ export default function GameBoardScreen({ route, navigation }) {
     }, 4000);
   };
 
+  // const handleTaskCompletion = (completed) => {
+  //   const currentPos = playerPositions[currentPlayerIndex];
+  //   let move = 0;
+
+  //   if (currentTask) {
+  //     const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
+  //     const difficulty = currentTask.difficulty;
+
+  //     if (randomChoice === 0) {
+  //       move = getRewardMovement(difficulty);
+  //     } else {
+  //       move = -getPenaltyMovement(difficulty);
+  //     }
+  //     console.log(move);
+  //     setExtraMoves(move);
+  //     //console.log(extraMoves);
+  //     const newPosition = Math.max(1, Math.min(currentPos + move, 100));
+
+  //     setShowTaskModal(false);
+  //     setShowRewardPenaltyModal(false);
+  //     setShowMoves(true);
+  //     setTimeout(() => {
+  //       setShowMoves(false);
+  //       animatePlayerMovement(currentPos, newPosition, true);
+  //     }, 3000);
+  //     setTimer(120);
+
+  //   }
+  // };
+
   const handleTaskCompletion = (completed) => {
     const currentPos = playerPositions[currentPlayerIndex];
     let move = 0;
 
-    if (currentTask) {
+    if (selectedType === "Truth") {
+      // For Truth, reward is +2 to +4, penalty is -2 to -4
+      const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1; // 50% chance for reward or penalty
+      move =
+        randomChoice === 0
+          ? Math.floor(Math.random() * 3) + 2
+          : -(Math.floor(Math.random() * 3) + 2);
+
+      // Increment the truth count for the current player
+      const newTruthCounts = [...truthCounts];
+      newTruthCounts[currentPlayerIndex] += 1;
+      setTruthCounts(newTruthCounts);
+    } else {
+      // For Dare, proceed as before
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
 
@@ -555,21 +592,19 @@ export default function GameBoardScreen({ route, navigation }) {
       } else {
         move = -getPenaltyMovement(difficulty);
       }
-      console.log(move);
-      setExtraMoves(move);
-      //console.log(extraMoves);
-      const newPosition = Math.max(1, Math.min(currentPos + move, 100));
-
-      setShowTaskModal(false);
-      setShowRewardPenaltyModal(false);
-      setShowMoves(true);
-      setTimeout(() => {
-        setShowMoves(false);
-        animatePlayerMovement(currentPos, newPosition, true);
-      }, 3000);
-      setTimer(120);
-      
     }
+
+    setExtraMoves(move);
+    const newPosition = Math.max(1, Math.min(currentPos + move, 100));
+
+    setShowTaskModal(false);
+    setShowRewardPenaltyModal(false);
+    setShowMoves(true);
+    setTimeout(() => {
+      setShowMoves(false);
+      animatePlayerMovement(currentPos, newPosition, true);
+    }, 3000);
+    setTimer(120);
   };
 
   const formatTime = (seconds) => {
@@ -586,6 +621,12 @@ export default function GameBoardScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.gradientBackground}>
+        <TouchableOpacity
+          style={styles.infoButton}
+          onPress={() => navigation.navigate("GameRules")}
+        >
+          <Text style={styles.infoButtonText}>?</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>Truth or Dare</Text>
         <View style={[styles.board, { width: width - 10 }]}>
           {[...Array(boardSize)].map((_, i) => (
@@ -621,6 +662,7 @@ export default function GameBoardScreen({ route, navigation }) {
         </View>
       </View>
 
+      {/* Bottom Container */}
       <View style={styles.bottomContainer}>
         <View style={styles.playerTurnContainer}>
           {/* {renderPlayerCard()} */}
@@ -647,48 +689,6 @@ export default function GameBoardScreen({ route, navigation }) {
               </Text>
             </View>
           </Animated.View>
-
-          {/* <TouchableOpacity
-            onPress={rollDice}
-            disabled={
-              isRolling ||
-              isMoving ||
-              finishedPlayers.includes(currentPlayerIndex)
-            }
-            style={[
-              styles.diceWrapper,
-              finishedPlayers.includes(currentPlayerIndex) &&
-                styles.disabledDice,
-            ]}
-          >
-            <Animated.View
-              style={[
-                styles.dice,
-                {
-                  transform: [{ rotate: rotation }],
-                  opacity:
-                    isRolling ||
-                    isMoving ||
-                    finishedPlayers.includes(currentPlayerIndex)
-                      ? 0.5
-                      : 1,
-                },
-              ]}
-            >
-              <DiceFace number={diceRoll} />
-            </Animated.View>
-            <Text style={styles.rollText}>
-              {isRolling
-                ? "Rolling..."
-                : isMoving
-                ? "Moving..."
-                : finishedPlayers.includes(currentPlayerIndex)
-                ? "Finished"
-                : isGameFinished
-                ? "Game Over"
-                : "Tap to Roll"}
-            </Text>
-          </TouchableOpacity> */}
 
           <TouchableOpacity
             onPress={rollDice}
@@ -753,7 +753,7 @@ export default function GameBoardScreen({ route, navigation }) {
       </View>
 
       {/* Truth/Dare Modal */}
-      <Modal visible={showTruthDareModal} transparent animationType="fade">
+      {/* <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -764,6 +764,41 @@ export default function GameBoardScreen({ route, navigation }) {
               <TouchableOpacity
                 style={[styles.modalButton, styles.truthButton]}
                 onPress={() => handleTruthDareSelection("Truth")}
+              >
+                <Text style={styles.modalButtonText}>TRUTH</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.dareButton]}
+                onPress={() => handleTruthDareSelection("Dare")}
+              >
+                <Text style={styles.modalButtonText}>DARE</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal> */}
+
+      {/* Truth/Dare Modal */}
+      <Modal visible={showTruthDareModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Your Path</Text>
+              <Text style={styles.modalSubtitle}>
+                {truthCounts[currentPlayerIndex] < 3
+                  ? `${3 - truthCounts[currentPlayerIndex]} truths left`
+                  : "No truths left. Choose Dare."}
+              </Text>
+            </View>
+            <View style={styles.truthDareContainer}>
+              <TouchableOpacity
+                 style={[
+                  styles.modalButton, 
+                  styles.truthButton, 
+                  truthCounts[currentPlayerIndex] >= 3 && styles.disabledButton
+                ]}
+                onPress={() => handleTruthDareSelection("Truth")}
+                disabled={truthCounts[currentPlayerIndex] >= 3}
               >
                 <Text style={styles.modalButtonText}>TRUTH</Text>
               </TouchableOpacity>
@@ -897,7 +932,7 @@ export default function GameBoardScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
-
+      {/* ShowMoves Modal */}
       <Modal visible={showMoves} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View>
@@ -906,7 +941,7 @@ export default function GameBoardScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
-
+      {/* Show End Game Button */}
       {isGameFinished && (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#4CAF50" }]}
@@ -931,23 +966,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#48BB78",
   },
 
+  disabledButton: {
+    opacity: 0.5,
+  },
+
   disabledDice: {
     opacity: 0.5,
   },
 
   moves: {
-    height: height - '90%',
-    width: width - '30%',
-    fontWeight:"bold",
+    height: height - "90%",
+    width: width - "30%",
+    fontWeight: "bold",
     fontSize: 160,
-    color:'white',
+    color: "white",
     textAlign: "center",
   },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1a365d"
+    backgroundColor: "#1a365d",
   },
   gradientBackground: {
     flex: 1,
@@ -1158,9 +1197,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F44336",
   },
   rewardPenaltyImage: {
-    width: 320,
-    height: 220,
-    marginBottom: 25,
+    width: 380,
+    height: 320,
+    marginBottom: 35,
+    marginRight: 80,
   },
   truthDareContainer: {
     flexDirection: "row",
@@ -1342,5 +1382,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#4299e1",
     borderRadius: 6,
     //position: 'absolute',
+  },
+  infoButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoButtonText: {
+    fontSize: 24,
+    color: "#FFFFFF",
   },
 });

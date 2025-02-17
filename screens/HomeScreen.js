@@ -1,12 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
+import { loadMusic, playMusic,stopMusic } from '../Data/MusicService'; // Import MusicService
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
+  useEffect(() => {
+    const setupMusic = async () => {
+      await loadMusic();  // Load the music
+      await playMusic();  // Play the music
+    };
+    setupMusic();
+
+    return () => {
+      stopMusic();  // Stop the music when navigating away
+    };
+  }, []); 
+
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.infoButton}
+        onPress={() => navigation.navigate('GameRules')}
+      >
+        <Text style={styles.infoButtonText}>?</Text>
+      </TouchableOpacity>
       <View style={styles.topSection}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
         <Text style={styles.subtitle}>Are you brave enough to face the unexpected?</Text>
@@ -80,5 +100,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: 'italic',
     opacity: 0.9,
+  },
+  infoButton: {
+    position: 'absolute',
+    top: 50,
+    right: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoButtonText: {
+    fontSize: 24,
+    color: '#FFFFFF',
   },
 });
