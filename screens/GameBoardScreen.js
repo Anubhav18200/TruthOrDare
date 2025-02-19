@@ -12,6 +12,7 @@ import { tasks } from "../Data/tasksData.js";
 import { Image } from "expo-image";
 import { Audio } from "expo-av";
 import { stopMusic } from "../Data/MusicService"; // Import stopMusic from MusicService
+import { useWindowDimensions } from 'react-native';
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -365,8 +366,8 @@ export default function GameBoardScreen({ route, navigation }) {
     if (diceSound) {
       await diceSound.replayAsync();
     }
-    const roll = 1;
-    //const roll = Math.floor(Math.random() * 6) + 1;
+    //const roll = 99;
+    const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([

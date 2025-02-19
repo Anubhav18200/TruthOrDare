@@ -49,7 +49,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
                 <Text style={styles.subtitle}>Select the perfect mood for your game</Text>
             </View>
 
-            <View style={styles.cardsContainer}>
+            <ScrollView contentContainerStyle={styles.cardsContainer}>
                 <View style={styles.cardsWrapper}>
                     {environments.map((env) => (
                         <TouchableOpacity
@@ -81,7 +81,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
                         </TouchableOpacity>
                     ))}
                 </View>
-            </View>
+            </ScrollView>
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -111,37 +111,37 @@ const styles = StyleSheet.create({
         flex: 1
     },
     headerContainer: {
-        padding: 20,
+        padding: width * 0.05, // 5% of screen width
         alignItems: 'center',
-        marginTop: 70
+        marginTop: height * 0.07 // 7% of screen height
     },
     title: {
-        fontSize: 32,
+        fontSize: width * 0.08, // 8% of screen width
         fontWeight: 'bold',
         color: '#e94560',
-        marginBottom: 8,
+        marginBottom: height * 0.01, // 1% of screen height
         textShadowColor: 'rgba(0, 0, 0, 0.3)',
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 3
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: width * 0.04, // 4% of screen width
         color: '#ffffff',
         opacity: 0.7
     },
     cardsContainer: {
-        flex: 1,
+        flexGrow: 1,
+        padding: width * 0.03, // 3% of screen width
     },
     cardsWrapper: {
-        padding: 16,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     },
     card: {
-        width: 160,
-        height: 200,
-        marginBottom: 16,
+        width: width * 0.43, // 43% of screen width
+        height: height * 0.25, // 25% of screen height
+        marginBottom: height * 0.02, // 2% of screen height
         borderRadius: 20,
         overflow: 'hidden',
         elevation: 5,
@@ -156,55 +156,53 @@ const styles = StyleSheet.create({
     },
     cardGradient: {
         flex: 1,
-        padding: 20,
+        padding: width * 0.04, // 4% of screen width
         alignItems: 'center',
         justifyContent: 'center'
     },
     cardIcon: {
-        fontSize: 40,
-        marginBottom: 12
+        fontSize: width * 0.1, // 10% of screen width
+        marginBottom: height * 0.01 // 1% of screen height
     },
     cardTitle: {
-        fontSize: 18,
+        fontSize: width * 0.045, // 4.5% of screen width
         fontWeight: 'bold',
         color: '#ffffff',
         textAlign: 'center',
-        marginBottom: 8
+        marginBottom: height * 0.01 // 1% of screen height
     },
     cardDescription: {
-        fontSize: 14,
+        fontSize: width * 0.035, // 3.5% of screen width
         color: '#ffffff',
         textAlign: 'center',
         opacity: 0.8
     },
     selectedIndicator: {
         position: 'absolute',
-        top: 10,
-        right: 10,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        top: height * 0.01, // 1% of screen height
+        right: width * 0.03, // 3% of screen width
+        width: width * 0.06, // 6% of screen width
+        height: width * 0.06, // 6% of screen width
+        borderRadius: width * 0.03, // 3% of screen width
         backgroundColor: '#e94560',
         alignItems: 'center',
         justifyContent: 'center'
     },
     checkmark: {
         color: '#ffffff',
-        fontSize: 16,
+        fontSize: width * 0.04, // 4% of screen width
         fontWeight: 'bold'
     },
     footer: {
-        height: height - '90%',
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: width * 0.05, // 5% of screen width
         backgroundColor: 'rgba(22, 33, 62, 0.9)'
     },
     startButton: {
         backgroundColor: '#e94560',
         borderRadius: 25,
-        padding: 16,
+        padding: height * 0.02, // 2% of screen height
         alignItems: 'center',
-        marginBottom: 70,
+        marginBottom: height * 0.02 // 2% of screen height
     },
     startButtonDisabled: {
         backgroundColor: '#233554',
@@ -212,7 +210,7 @@ const styles = StyleSheet.create({
     },
     startButtonText: {
         color: '#ffffff',
-        fontSize: 18,
+        fontSize: width * 0.045, // 4.5% of screen width
         fontWeight: 'bold'
     }
 });
