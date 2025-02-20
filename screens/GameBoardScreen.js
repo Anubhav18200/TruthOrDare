@@ -12,7 +12,7 @@ import { tasks } from "../Data/tasksData.js";
 import { Image } from "expo-image";
 import { Audio } from "expo-av";
 import { stopMusic } from "../Data/MusicService"; // Import stopMusic from MusicService
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from "react-native";
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -74,7 +74,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const boardSize = 100;
 
-  const squareSize = 38;
+  const squareSize = width / 10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -628,38 +628,44 @@ export default function GameBoardScreen({ route, navigation }) {
         >
           <Text style={styles.infoButtonText}>?</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Truth or Dare</Text>
-        <View style={[styles.board, { width: width - 10 }]}>
-          {[...Array(boardSize)].map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.square,
-                {
-                  width: squareSize,
-                  height: squareSize,
-                  backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
-                },
-              ]}
-            >
-              <Text style={styles.squareNumber}>
-                {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
-              </Text>
-              {playerPositions.map(
-                (pos, index) =>
-                  pos === i + 1 && (
-                    <Image
-                      key={index}
-                      source={playerIcons[index]}
-                      style={styles.playerIcon}
-                    />
-                  )
-              )}
-              {randomGiftPositions.includes(i + 1) && (
-                <Image source={giftIcon} style={styles.giftIcon} />
-              )}
-            </View>
-          ))}
+
+        <View style={styles.textStyle}>
+          <Text style={styles.title}>Truth or Dare</Text>
+        </View>
+
+        <View style={styles.boardStyle}>
+          <View style={[styles.board]}>
+            {[...Array(boardSize)].map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.square,
+                  {
+                    width: squareSize,
+                    height: squareSize,
+                    backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
+                  },
+                ]}
+              >
+                <Text style={styles.squareNumber}>
+                  {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
+                </Text>
+                {playerPositions.map(
+                  (pos, index) =>
+                    pos === i + 1 && (
+                      <Image
+                        key={index}
+                        source={playerIcons[index]}
+                        style={styles.playerIcon}
+                      />
+                    )
+                )}
+                {randomGiftPositions.includes(i + 1) && (
+                  <Image source={giftIcon} style={styles.giftIcon} />
+                )}
+              </View>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -754,32 +760,6 @@ export default function GameBoardScreen({ route, navigation }) {
       </View>
 
       {/* Truth/Dare Modal */}
-      {/* <Modal visible={showTruthDareModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Your Path</Text>
-              <Text style={styles.modalSubtitle}>Truth or Dare awaits...</Text>
-            </View>
-            <View style={styles.truthDareContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.truthButton]}
-                onPress={() => handleTruthDareSelection("Truth")}
-              >
-                <Text style={styles.modalButtonText}>TRUTH</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.dareButton]}
-                onPress={() => handleTruthDareSelection("Dare")}
-              >
-                <Text style={styles.modalButtonText}>DARE</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal> */}
-
-      {/* Truth/Dare Modal */}
       <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -793,10 +773,10 @@ export default function GameBoardScreen({ route, navigation }) {
             </View>
             <View style={styles.truthDareContainer}>
               <TouchableOpacity
-                 style={[
-                  styles.modalButton, 
-                  styles.truthButton, 
-                  truthCounts[currentPlayerIndex] >= 3 && styles.disabledButton
+                style={[
+                  styles.modalButton,
+                  styles.truthButton,
+                  truthCounts[currentPlayerIndex] >= 3 && styles.disabledButton,
                 ]}
                 onPress={() => handleTruthDareSelection("Truth")}
                 disabled={truthCounts[currentPlayerIndex] >= 3}
@@ -993,6 +973,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#2a4365",
     paddingTop: 20,
+    //width: '100%',
     alignItems: "center",
   },
   imgcontainer: {
@@ -1023,11 +1004,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    marginTop: 100,
-    marginBottom: 0,
     color: "#fff",
     textTransform: "uppercase",
     letterSpacing: 1,
+  },
+  textStyle: {
+    marginTop: 70,
   },
   playerInfo: {
     flexDirection: "row",
@@ -1058,12 +1040,15 @@ const styles = StyleSheet.create({
   board: {
     flexWrap: "wrap",
     flexDirection: "row",
-    marginTop: "10%",
     borderColor: "#ddd",
-    backgroundColor: "#fff",
     borderRadius: 5,
     overflow: "hidden",
-    //padding: 0,
+    backgroundColor: "#fff",
+    padding: 0,
+  },
+  boardStyle: {
+    width: width - '10%',
+    top: '10%'
   },
   square: {
     justifyContent: "center",
