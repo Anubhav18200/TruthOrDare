@@ -17,10 +17,10 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
       }, []);
 
     const environments = [
-        { name: 'Home', icon: '🏠', description: 'Casual and comfortable setting', gradient: ['#2193b0', '#6dd5ed'] },
-        { name: 'Office', icon: '💼', description: 'Professional environment', gradient: ['#8E2DE2', '#4A00E0'] },
-        { name: 'Party', icon: '🎉', description: 'Fun and exciting atmosphere', gradient: ['#FF416C', '#FF4B2B'] },
-        { name: 'School', icon: '🏫', description: 'Educational setting', gradient: ['#FFEB3B', '#FF9800'] }
+        { name: 'Family', icon: '👨‍👩‍👧‍👦', description: 'Fun and lighthearted dares for all ages', gradient: ['#2193b0', '#6dd5ed'] },
+        { name: 'Friends', icon: '👫', description: 'Silly and competitive dares for your squad', gradient: ['#8E2DE2', '#4A00E0'] },
+        { name: 'Couples', icon: '💑', description: 'Romantic and playful dares for two', gradient: ['#FF416C', '#FF4B2B'] },
+        { name: 'Mixed', icon: '🤝', description: 'Collaborative and fun challenges for groups', gradient: ['#FFEB3B', '#FF9800'] }
     ];
 
     const handleSelect = (name) => {
@@ -45,8 +45,8 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
             style={styles.container}
         >
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>Choose Your Vibe</Text>
-                <Text style={styles.subtitle}>Select the perfect mood for your game</Text>
+                <Text style={styles.title}>Choose Your Vibe 🎉</Text>
+                <Text style={styles.subtitle}>Select the perfect mode for your game </Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.cardsContainer}>

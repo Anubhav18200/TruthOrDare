@@ -12,7 +12,6 @@ import { tasks } from "../Data/tasksData.js";
 import { Image } from "expo-image";
 import { Audio } from "expo-av";
 import { stopMusic } from "../Data/MusicService"; // Import stopMusic from MusicService
-import { useWindowDimensions } from "react-native";
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -26,11 +25,11 @@ const playerIcons = [
 const giftIcon = require("../assets/gift.png");
 const rewardGif = require("../assets/reward.gif");
 const penaltyGif = require("../assets/penalty.gif");
-const ghostImg = require("../assets/ghost.gif");
+const randomImg = require("../assets/ghost.gif");
 const exerImg = require("../assets/ex1.gif");
 const singImg = require("../assets/singing.gif");
 const danceImg = require("../assets/dancing.gif");
-const funnyImg = require("../assets/funny.gif");
+const actImg = require("../assets/funny.gif");
 
 const { width, height } = Dimensions.get("window");
 
@@ -74,7 +73,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const boardSize = 100;
 
-  const squareSize = width / 10;
+  const squareSize = (width-10) /10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -304,10 +303,6 @@ export default function GameBoardScreen({ route, navigation }) {
   };
 
   const checkGameStatus = (newPositions) => {
-    // console.log("Checking game status...");
-    // console.log("Current Player Position:", newPositions[currentPlayerIndex]);
-    // console.log("Finished Players:", finishedPlayers);
-
     const newFinishedPlayers = [...finishedPlayers];
 
     // Check if the current player has reached 100
@@ -366,7 +361,6 @@ export default function GameBoardScreen({ route, navigation }) {
     if (diceSound) {
       await diceSound.replayAsync();
     }
-    //const roll = 99;
     const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
@@ -425,37 +419,6 @@ export default function GameBoardScreen({ route, navigation }) {
     }
   };
 
-  // const handleTruthDareSelection = (type) => {
-  //   setSelectedType(type);
-  //   const categories = Object.keys(tasks[environment][type]);
-  //   const randomCategory =
-  //     categories[Math.floor(Math.random() * categories.length)];
-
-  //   if (randomCategory === "Ghost") {
-  //     setSelectedCategoryImage(ghostImg);
-  //   } else if (randomCategory === "Exercise") {
-  //     setSelectedCategoryImage(exerImg);
-  //   } else if (randomCategory === "Dancing") {
-  //     setSelectedCategoryImage(danceImg);
-  //   } else if (randomCategory === "FunnyTask") {
-  //     setSelectedCategoryImage(funnyImg);
-  //   } else {
-  //     setSelectedCategoryImage(singImg);
-  //   }
-  //   setSelectedCategoryImage(exerImg);
-  //   const selectedCategoryData = tasks[environment][type][randomCategory];
-  //   const selectedTasks = {
-  //     Easy: getRandomTask(selectedCategoryData.Easy),
-  //     Medium: getRandomTask(selectedCategoryData.Medium),
-  //     Hard: getRandomTask(selectedCategoryData.Hard),
-  //   };
-
-  //   setRandomTasks(selectedTasks);
-  //   setSelectedCategory(randomCategory);
-  //   setShowTruthDareModal(false);
-  //   setShowDifficultyModal(true);
-  // };
-
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
 
@@ -487,19 +450,19 @@ export default function GameBoardScreen({ route, navigation }) {
       // For Dare, proceed as before
       const categories = Object.keys(tasks[environment][type]);
       const randomCategory =
-        categories[Math.floor(Math.random() * categories.length)];
+      categories[Math.floor(Math.random() * categories.length)];
 
       // Set the category image
-      if (randomCategory === "Ghost") {
-        setSelectedCategoryImage(ghostImg);
+      if (randomCategory === "Singing") {
+        setSelectedCategoryImage(singImg);
       } else if (randomCategory === "Exercise") {
         setSelectedCategoryImage(exerImg);
       } else if (randomCategory === "Dancing") {
         setSelectedCategoryImage(danceImg);
-      } else if (randomCategory === "FunnyTask") {
-        setSelectedCategoryImage(funnyImg);
+      } else if (randomCategory === "Acting") {
+        setSelectedCategoryImage(actImg);
       } else {
-        setSelectedCategoryImage(singImg);
+        setSelectedCategoryImage(randomImg);
       }
 
       const selectedCategoryData = tasks[environment][type][randomCategory];
@@ -536,36 +499,6 @@ export default function GameBoardScreen({ route, navigation }) {
       setTimer(120);
     }, 4000);
   };
-
-  // const handleTaskCompletion = (completed) => {
-  //   const currentPos = playerPositions[currentPlayerIndex];
-  //   let move = 0;
-
-  //   if (currentTask) {
-  //     const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
-  //     const difficulty = currentTask.difficulty;
-
-  //     if (randomChoice === 0) {
-  //       move = getRewardMovement(difficulty);
-  //     } else {
-  //       move = -getPenaltyMovement(difficulty);
-  //     }
-  //     console.log(move);
-  //     setExtraMoves(move);
-  //     //console.log(extraMoves);
-  //     const newPosition = Math.max(1, Math.min(currentPos + move, 100));
-
-  //     setShowTaskModal(false);
-  //     setShowRewardPenaltyModal(false);
-  //     setShowMoves(true);
-  //     setTimeout(() => {
-  //       setShowMoves(false);
-  //       animatePlayerMovement(currentPos, newPosition, true);
-  //     }, 3000);
-  //     setTimer(120);
-
-  //   }
-  // };
 
   const handleTaskCompletion = (completed) => {
     const currentPos = playerPositions[currentPlayerIndex];
@@ -621,6 +554,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Board Container*/}
       <View style={styles.gradientBackground}>
         <TouchableOpacity
           style={styles.infoButton}
@@ -629,12 +563,13 @@ export default function GameBoardScreen({ route, navigation }) {
           <Text style={styles.infoButtonText}>?</Text>
         </TouchableOpacity>
 
-        <View style={styles.textStyle}>
+        <View style={styles.titleContainer}>
           <Text style={styles.title}>Truth or Dare</Text>
         </View>
 
-        <View style={styles.boardStyle}>
-          <View style={[styles.board]}>
+        {/* Board Container */}
+        <View style={styles.boardContainer}>
+          <View style={styles.board}>
             {[...Array(boardSize)].map((_, i) => (
               <View
                 key={i}
@@ -670,94 +605,115 @@ export default function GameBoardScreen({ route, navigation }) {
       </View>
 
       {/* Bottom Container */}
-      <View style={styles.bottomContainer}>
-        <View style={styles.playerTurnContainer}>
-          {/* {renderPlayerCard()} */}
-          <Animated.View
-            style={[
-              styles.playerCard,
-              {
-                transform: [{ scale: pulseAnimation }],
-                borderWidth: 2,
-                borderColor: "#4299e1",
-              },
-            ]}
-          >
-            <View style={styles.yourTurnBadge}>
-              <Text style={styles.yourTurnText}>Your Turn </Text>
-            </View>
-            <Image
-              source={playerIcons[currentPlayerIndex]}
-              style={styles.playerCardIcon}
-            />
-            <View style={styles.playerCardInfo}>
-              <Text style={styles.playerCardName}>
-                {players[currentPlayerIndex].name}
-              </Text>
-            </View>
-          </Animated.View>
-
+      {isGameFinished ? (
+        // Show only the End Game button
+        <View style={styles.endGameButtonContainer}>
           <TouchableOpacity
-            onPress={rollDice}
-            disabled={
-              isRolling ||
-              isMoving ||
-              finishedPlayers.includes(currentPlayerIndex) ||
-              isGameFinished
+            style={[styles.button, { backgroundColor: "#4CAF50" }]}
+            onPress={() =>
+              navigation.navigate("EndGame", {
+                players: players.map((player, index) => ({
+                  ...player,
+                  position: finishedPlayers.indexOf(index) + 1,
+                })),
+              })
             }
-            style={[
-              styles.diceWrapper,
-              finishedPlayers.includes(currentPlayerIndex) || isGameFinished
-                ? styles.disabledDice
-                : null,
-            ]}
           >
+            <Text style={styles.buttonText}>End Game</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // Show the regular bottom container
+        <View style={styles.bottomContainer}>
+          <View style={styles.playerTurnContainer}>
             <Animated.View
               style={[
-                styles.dice,
+                styles.playerCard,
                 {
-                  transform: [{ rotate: rotation }],
-                  opacity:
-                    isRolling ||
-                    isMoving ||
-                    finishedPlayers.includes(currentPlayerIndex) ||
-                    isGameFinished
-                      ? 0.5
-                      : 1,
+                  transform: [{ scale: pulseAnimation }],
+                  borderWidth: 2,
+                  borderColor: "#4299e1",
                 },
               ]}
             >
-              <DiceFace number={diceRoll} />
-            </Animated.View>
-            <Text style={styles.rollText}>
-              {isRolling
-                ? "Rolling..."
-                : isMoving
-                ? "Moving..."
-                : finishedPlayers.includes(currentPlayerIndex)
-                ? "Finished"
-                : isGameFinished
-                ? "Game Over"
-                : "Tap to Roll"}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.nextPlayerPreview}>
-            <View style={styles.nextPlayerInfo}>
-              <Text style={styles.nextPlayerLabel}>Next Player</Text>
+              <View style={styles.yourTurnBadge}>
+                <Text style={styles.yourTurnText}>Your Turn </Text>
+              </View>
               <Image
-                source={playerIcons[(currentPlayerIndex + 1) % players.length]}
-                style={styles.nextPlayerIcon}
+                source={playerIcons[currentPlayerIndex]}
+                style={styles.playerCardIcon}
               />
-              <View>
-                <Text style={styles.nextPlayerName}>
-                  {players[(currentPlayerIndex + 1) % players.length].name}
+              <View style={styles.playerCardInfo}>
+                <Text style={styles.playerCardName}>
+                  {players[currentPlayerIndex].name}
                 </Text>
+              </View>
+            </Animated.View>
+
+            <TouchableOpacity
+              onPress={rollDice}
+              disabled={
+                isRolling ||
+                isMoving ||
+                finishedPlayers.includes(currentPlayerIndex) ||
+                isGameFinished
+              }
+              style={[
+                styles.diceWrapper,
+                finishedPlayers.includes(currentPlayerIndex) || isGameFinished
+                  ? styles.disabledDice
+                  : null,
+              ]}
+            >
+              <Animated.View
+                style={[
+                  styles.dice,
+                  {
+                    transform: [{ rotate: rotation }],
+                    opacity:
+                      isRolling ||
+                      isMoving ||
+                      finishedPlayers.includes(currentPlayerIndex) ||
+                      isGameFinished
+                        ? 0.5
+                        : 1,
+                  },
+                ]}
+              >
+                <DiceFace number={diceRoll} />
+              </Animated.View>
+              <Text style={styles.rollText}>
+                {isRolling
+                  ? "Rolling..."
+                  : isMoving
+                  ? "Moving..."
+                  : finishedPlayers.includes(currentPlayerIndex)
+                  ? "Finished"
+                  : isGameFinished
+                  ? "Game Over"
+                  : "Tap to Roll"}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.nextPlayerPreview}>
+              <View style={styles.nextPlayerInfo}>
+                <Text style={styles.nextPlayerLabel}>Next Player</Text>
+                <Image
+                  source={
+                    playerIcons[(currentPlayerIndex + 1) % players.length]
+                  }
+                  style={styles.nextPlayerIcon}
+                />
+                <View>
+                  <Text style={styles.nextPlayerName}>
+                    {players[(currentPlayerIndex + 1) % players.length].name}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* Truth/Dare Modal */}
       <Modal visible={showTruthDareModal} transparent animationType="fade">
@@ -922,7 +878,7 @@ export default function GameBoardScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
-      {/* Show End Game Button */}
+      {/* Show End Game Button
       {isGameFinished && (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#4CAF50" }]}
@@ -937,7 +893,7 @@ export default function GameBoardScreen({ route, navigation }) {
         >
           <Text style={styles.buttonText}>End Game</Text>
         </TouchableOpacity>
-      )}
+      )} */}
     </View>
   );
 }
@@ -965,7 +921,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#1a365d",
   },
@@ -973,36 +929,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#2a4365",
     paddingTop: 20,
-    //width: '100%',
+    width: '100%',
     alignItems: "center",
+  },
+  titleContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  boardContainer: {
+    flex: 1, // Take up remaining space
+    justifyContent: "center", // Center the board vertically
+    alignItems: "center",
+    width: "100%",
   },
   imgcontainer: {
     flex: 1, // Take up the full screen
     justifyContent: "center", // Center the content vertically
     alignItems: "center", // Center the content horizontally
     position: "absolute", // Position it on top of the game screen
-    //top: "25%", // Align at the top of the screen
-    //left: "25%", // Align at the left of the screen
-    width: "100%", // Take full width
-    height: "50%", // Take full height
+    width: width, // Take full width
+    height: height, // Take full height
+    top: 150, // Align to the top
+    left: 0, // Align to the left
   },
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
-    flex: 1, // Take at least half the screen height
-    width: "100%", // Full width
-    height: "100%", // Ensure it covers half the screen or more
-    position: "absolute", // Keep it in front of the other content
+    width: width * 1, // 80% of screen width
+    height: height * 0.5, // 50% of screen height
+    bottom: height * 0.2, // 20% from the bottom
     zIndex: 1000, // Higher z-index to stay on top
   },
   categoryImage: {
     width: "100%", // Adjust the size as needed
-    height: "30%", // Adjust the size as needed
-    // borderRadius: 10,
+    height: "100%", // Adjust the size as needed
+    resizeMode: "contain", // Ensure the image scales properly
   },
 
   title: {
     fontSize: 28,
+    marginTop: 40,
     fontWeight: "bold",
     color: "#fff",
     textTransform: "uppercase",
@@ -1044,11 +1011,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     overflow: "hidden",
     backgroundColor: "#fff",
-    padding: 0,
+    //padding: 0,
+    alignItems: "center",
+    width: "100%",
+    height: height - "50%",
   },
   boardStyle: {
-    width: width - '10%',
-    top: '10%'
+    width: width - "10%",
+    alignContent: "center",
+    justifyContent: "center",
   },
   square: {
     justifyContent: "center",
@@ -1061,29 +1032,35 @@ const styles = StyleSheet.create({
   },
   squareNumber: {
     position: "absolute",
-    top: 5,
+    top: "30%",
     fontSize: 12,
     color: "#4a5568",
   },
   playerIcon: {
-    width: 20,
-    height: 35,
+    width: "70%",
+    height: "100%",
     position: "absolute",
     borderRadius: 15,
     zIndex: 2,
   },
   giftIcon: {
-    width: 30,
-    height: 30,
+    width: "90%",
+    height: "90%",
     position: "absolute",
-    bottom: 5,
+  },
+  endGameButtonContainer: {
+    position: "absolute",
+    bottom: 30,
+    width: "50%",
+    alignItems: "center",
   },
   button: {
     backgroundColor: "#FF9800",
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
-    marginTop: 20,
-    marginBottom: 160,
+    height: '120%',
+    width: "80%",
+    alignItems: "center",
   },
   buttonText: {
     color: "#FFF",
@@ -1231,10 +1208,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottomContainer: {
-    position: "absolute",
-    bottom: 1,
-    display: "flex",
-    flexDirection: "row",
+    width: "100%",
     backgroundColor: "#2d3748",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
