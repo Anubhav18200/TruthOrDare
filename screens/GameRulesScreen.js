@@ -1,7 +1,9 @@
 // GameRulesScreen.js
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const { width, height } = Dimensions.get("window");
 
 export default function GameRulesScreen({ navigation }) {
   return (
@@ -40,6 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContainer: {
+    marginTop: height - 700,
     paddingVertical: 30,
     paddingHorizontal: 20,
   },

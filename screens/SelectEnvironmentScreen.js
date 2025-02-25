@@ -45,7 +45,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
             style={styles.container}
         >
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>Choose Your Vibe 🎉</Text>
+                <Text style={styles.title}>Who’s Joining the Fun? 🎉</Text>
                 <Text style={styles.subtitle}>Select the perfect mode for your game </Text>
             </View>
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         marginTop: height * 0.07 // 7% of screen height
     },
     title: {
-        fontSize: width * 0.08, // 8% of screen width
+        fontSize: width * 0.07, // 8% of screen width
         fontWeight: 'bold',
         color: '#e94560',
         marginBottom: height * 0.01, // 1% of screen height

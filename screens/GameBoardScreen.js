@@ -73,7 +73,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const boardSize = 100;
 
-  const squareSize = (width-10) /10;
+  const squareSize = (width) / 10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -266,8 +266,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
         // Check if player landed on a gift and this wasn't a reward movement
         if (randomGiftPositions.includes(endPos) && !isReward) {
-          //const randomChoice = Math.floor(Math.random() * 2);
-          const randomChoice = 0;
+          const randomChoice = Math.floor(Math.random() * 2);
           setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
           setShowRewardPenaltyModal(true);
 
@@ -564,7 +563,7 @@ export default function GameBoardScreen({ route, navigation }) {
         </TouchableOpacity>
 
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Truth or Dare</Text>
+          <Text style={styles.title}>TRUTH OR DARE</Text>
         </View>
 
         {/* Board Container */}
@@ -720,11 +719,11 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Your Path</Text>
+              <Text style={styles.modalTitle}>MAKE YOUR CHOICE</Text>
               <Text style={styles.modalSubtitle}>
                 {truthCounts[currentPlayerIndex] < 3
-                  ? `${3 - truthCounts[currentPlayerIndex]} truths left`
-                  : "No truths left. Choose Dare."}
+                  ? `${3 - truthCounts[currentPlayerIndex]} Truths left`
+                  : "No Truths left. Choose Dare."}
               </Text>
             </View>
             <View style={styles.truthDareContainer}>
@@ -755,7 +754,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Difficulty</Text>
+              <Text style={styles.modalTitle}>SELECT DIFFICULTY</Text>
               <Text style={styles.modalSubtitle}>
                 Choose your challenge level
               </Text>
@@ -861,6 +860,9 @@ export default function GameBoardScreen({ route, navigation }) {
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View>
+            <Text style={styles.rewardPenaltyTitle}>
+              {rewardPenaltyGif === rewardGif ? "REWARD" : "PENALTY"}
+            </Text>
             <View style={styles.modalHeader}></View>
             <Image
               source={rewardPenaltyGif}
@@ -874,7 +876,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View>
             <View style={styles.modalHeader}></View>
-            <Text style={styles.moves}>{extraMoves}</Text>
+            <Text style={styles.moves}>{extraMoves} Steps</Text>
           </View>
         </View>
       </Modal>
@@ -912,10 +914,11 @@ const styles = StyleSheet.create({
   },
 
   moves: {
-    height: height - "90%",
-    width: width - "30%",
+    //height: height - "80%",
+    //width: width - "30%",
+    marginBottom: 110,
     fontWeight: "bold",
-    fontSize: 160,
+    fontSize: 80,
     color: "white",
     textAlign: "center",
   },
@@ -972,7 +975,6 @@ const styles = StyleSheet.create({
     marginTop: 40,
     fontWeight: "bold",
     color: "#fff",
-    textTransform: "uppercase",
     letterSpacing: 1,
   },
   textStyle: {
@@ -1164,6 +1166,14 @@ const styles = StyleSheet.create({
     height: 320,
     marginBottom: 35,
     marginRight: 80,
+  },
+  rewardPenaltyTitle: {
+    fontSize: 50,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    color: "white",
+    letterSpacing: 2,
   },
   truthDareContainer: {
     flexDirection: "row",
