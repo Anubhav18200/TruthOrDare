@@ -73,7 +73,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const boardSize = 100;
 
-  const squareSize = (width) / 10;
+  const squareSize = (width - 10 ) / 10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -880,22 +880,6 @@ export default function GameBoardScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
-      {/* Show End Game Button
-      {isGameFinished && (
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#4CAF50" }]}
-          onPress={() =>
-            navigation.navigate("EndGame", {
-              players: players.map((player, index) => ({
-                ...player,
-                position: finishedPlayers.indexOf(index) + 1,
-              })),
-            })
-          }
-        >
-          <Text style={styles.buttonText}>End Game</Text>
-        </TouchableOpacity>
-      )} */}
     </View>
   );
 }
@@ -1010,10 +994,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "row",
     borderColor: "#ddd",
-    borderRadius: 5,
     overflow: "hidden",
-    backgroundColor: "#fff",
-    //padding: 0,
+    backgroundColor : 'white',
+    padding: 5,
     alignItems: "center",
     width: "100%",
     height: height - "50%",

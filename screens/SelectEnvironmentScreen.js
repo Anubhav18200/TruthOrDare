@@ -45,7 +45,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
             style={styles.container}
         >
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>Who’s Joining the Fun? 🎉</Text>
+                <Text style={styles.title}>Who’s Joining the Fun?🎉</Text>
                 <Text style={styles.subtitle}>Select the perfect mode for your game </Text>
             </View>
 
@@ -108,7 +108,7 @@ export default function SelectEnvironmentScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
     },
     headerContainer: {
         padding: width * 0.05, // 5% of screen width
