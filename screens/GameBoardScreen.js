@@ -46,7 +46,7 @@ export default function GameBoardScreen({ route, navigation }) {
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
-  const [timer, setTimer] = useState(120);
+  const [timer, setTimer] = useState(150);
   const [currentTask, setCurrentTask] = useState(null);
   const [showRewardPenaltyModal, setShowRewardPenaltyModal] = useState(false);
   const [rewardPenaltyGif, setRewardPenaltyGif] = useState(null);
@@ -953,16 +953,12 @@ const styles = StyleSheet.create({
     height: "100%", // Adjust the size as needed
     resizeMode: "contain", // Ensure the image scales properly
   },
-
   title: {
     fontSize: 28,
     marginTop: 40,
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 1,
-  },
-  textStyle: {
-    marginTop: 70,
   },
   playerInfo: {
     flexDirection: "row",
@@ -1000,11 +996,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: height - "50%",
-  },
-  boardStyle: {
-    width: width - "10%",
-    alignContent: "center",
-    justifyContent: "center",
   },
   square: {
     justifyContent: "center",

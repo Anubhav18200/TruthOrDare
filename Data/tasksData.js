@@ -372,24 +372,24 @@ export const tasks = {
       },
       Exercise: {
         Easy: [
-              "Do 10 jumping jacks.", 
-              "Hold a plank for 15 seconds."
+              "Kiss your favorite part of my body.", 
+              "Take off one article of my clothing using only your mouth."
             ],
         Medium: [
-                "Do 15 squats in a row.", 
-                "Try to touch your toes without bending your knees for 10 seconds."
+                "Spell the alphabet with your tongue somewhere on my body.", 
+                "Eat a piece of fruit as sexy as possible."
               ],
         Hard: [
-              "Do 20 push-ups in one go.", 
-              "Balance on one foot while reciting the alphabet backwards."
+              "Turn off the lights and try to turn me on only through sounds.", 
+              "Do a seductive dance on the table."
             ]
       },
       Acting: {
         Easy: 
             [
-              "Pretend to be a professor giving a lecture.",
-              "Do a funny impression of a mutual friend.", 
-              "Act like you're on a reality TV show.",
+              "Do your best celebrity impression.",
+              "Put an ice cube in your underwear.", 
+              "Put on a blindfold and let me feed you something out of the fridge.",
               "Make out with a pillow.",
               "Eat a piece of fruit as sexy as possible."
             ],
@@ -409,30 +409,27 @@ export const tasks = {
       Random: {
         Easy: 
           [
-            "Do a stand-up comedy act for 30 seconds.",
-            "Try speaking in an accent for 2 minutes (e.g., British, Australian).", 
-            "Pretend to be a news anchor reporting breaking news.",
+            "Hold eye contact for two full minutes.",
+            "Tell me something you've never told anyone before.", 
+            "Kiss me deeply for five full minutes.",
             "Recreate a photo of the two of us with me.",
             "Send me the spiciest text message you can think of.",
-            "Give anyone massage.",
-            "Let the other player do your makeup while you're blindfolded."
+            "ake off one piece of clothing and leave it off for the rest of the game."
           ],
         Medium: 
           [
-            "Make up a bedtime story and tell it dramatically.",
             "Give any player a massage, then let the other person do your makeup or style your hair.",
-             "Perform an ad for an imaginary product.",
-             "Kiss me passionately for 2 minutes.",
-             "Take off one piece of clothing and leave it off for the rest of the game.",
              "Tell me why you love me while doing 25 jumping jacks.",
+             "For the next 15 minutes, only talk to me by whispering seductively",
+             "Make me a bouquet using flowers or plants from outside.",
              "Wear one pieces of clothing of your partner (partner chooses) for the rest of the game"
             ],
         Hard: 
           [
-            "Give an Oscar-worthy acceptance speech.",
-            "Let the other person post a photo of their choice to your Instagram story.", 
-            "Narrate everything someone does for the next 2 minutes.",
-            "Wear one outfit of other player's choice"
+            "Do a spicy dance to a song I choose.",
+            "Play a round of seven minutes in heaven with me.", 
+            "Be intimate with me in a new part of the house.",
+            "Use your elbows to unbuckle your belt."
           ]
       }
     },
