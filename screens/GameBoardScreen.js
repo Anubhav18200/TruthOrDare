@@ -444,7 +444,7 @@ export default function GameBoardScreen({ route, navigation }) {
       // Show the task modal directly
       setShowTruthDareModal(false);
       setShowTaskModal(true);
-      setTimer(120);
+      setTimer(150);
     } else {
       // For Dare, proceed as before
       const categories = Object.keys(tasks[environment][type]);
@@ -495,7 +495,7 @@ export default function GameBoardScreen({ route, navigation }) {
     setTimeout(() => {
       setShowCategoryImage(false);
       setShowTaskModal(true);
-      setTimer(120);
+      setTimer(150);
     }, 4000);
   };
 
@@ -537,7 +537,7 @@ export default function GameBoardScreen({ route, navigation }) {
       setShowMoves(false);
       animatePlayerMovement(currentPos, newPosition, true);
     }, 3000);
-    setTimer(120);
+    setTimer(150);
   };
 
   const formatTime = (seconds) => {
