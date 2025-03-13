@@ -223,7 +223,7 @@ export default function EndGameScreen({ route, navigation }) {
               style={styles.shareButton}
               onPress={shareResultsAsImage}
             >
-              <Text style={styles.buttonText}>📸 Share as Image</Text>
+              <Text style={styles.buttonText}>📸 Share Results</Text>
             </TouchableOpacity>
           </View>
 
@@ -443,5 +443,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 32,
     fontWeight: "bold",
+    textAlign: "center"
   },
 });

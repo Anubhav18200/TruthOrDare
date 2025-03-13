@@ -252,7 +252,7 @@ export default function GameBoardScreen({ route, navigation }) {
           await movementSound.replayAsync();
         }
 
-        setTimeout(moveOneStep, 30);
+        setTimeout(moveOneStep, 300);
       } else {
         setIsMoving(false);
 
@@ -360,7 +360,7 @@ export default function GameBoardScreen({ route, navigation }) {
     if (diceSound) {
       await diceSound.replayAsync();
     }
-    const roll = 4;
+    const roll = 98;
     //const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
@@ -877,7 +877,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View>
             <View style={styles.modalHeader}></View>
-            <Text style={styles.moves}>You Will Move {extraMoves} Steps</Text>
+            <Text style={styles.moves}>You will Move {extraMoves} Steps</Text>
           </View>
         </View>
       </Modal>
@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
   moves: {
     marginBottom: 110,
     fontWeight: "bold",
-    fontSize: 80,
+    fontSize: 50,
     color: "white",
     textAlign: "center",
   },
