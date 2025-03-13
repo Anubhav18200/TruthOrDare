@@ -4,11 +4,11 @@
     "slug": "TruthOrDare",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/App_Icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/App_Icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,13 +17,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/App_Icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.fallen_star.TruthOrDare"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/App_Icon.png"
     },
     "extra": {
       "eas": {

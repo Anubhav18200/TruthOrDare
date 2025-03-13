@@ -18,7 +18,7 @@ export default function GameRulesScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.heading}>Game Rules</Text>
         <Text style={styles.rulesText}>
-          1. Minimum 2 players and maximum 8 players are required to play.
+          1. Minimum 2 players and maximum 6 players are required to play.
         </Text>
         <Text style={styles.rulesText}>
           2. You have to select the game mode according to your environment.
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContainer: {
-    marginTop: height - 700,
+   //marginTop: height - 700,
     paddingVertical: 30,
     paddingHorizontal: 20,
   },

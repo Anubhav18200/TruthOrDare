@@ -73,7 +73,7 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const boardSize = 100;
 
-  const squareSize = (width - 10 ) / 10;
+  const squareSize = (width - 11) / 10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -252,7 +252,7 @@ export default function GameBoardScreen({ route, navigation }) {
           await movementSound.replayAsync();
         }
 
-        setTimeout(moveOneStep, 300);
+        setTimeout(moveOneStep, 30);
       } else {
         setIsMoving(false);
 
@@ -360,7 +360,8 @@ export default function GameBoardScreen({ route, navigation }) {
     if (diceSound) {
       await diceSound.replayAsync();
     }
-    const roll = Math.floor(Math.random() * 6) + 1;
+    const roll = 4;
+    //const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([
@@ -876,7 +877,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View>
             <View style={styles.modalHeader}></View>
-            <Text style={styles.moves}>{extraMoves} Steps</Text>
+            <Text style={styles.moves}>You Will Move {extraMoves} Steps</Text>
           </View>
         </View>
       </Modal>
@@ -898,8 +899,6 @@ const styles = StyleSheet.create({
   },
 
   moves: {
-    //height: height - "80%",
-    //width: width - "30%",
     marginBottom: 110,
     fontWeight: "bold",
     fontSize: 80,
@@ -953,12 +952,16 @@ const styles = StyleSheet.create({
     height: "100%", // Adjust the size as needed
     resizeMode: "contain", // Ensure the image scales properly
   },
+
   title: {
     fontSize: 28,
     marginTop: 40,
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 1,
+  },
+  textStyle: {
+    marginTop: 70,
   },
   playerInfo: {
     flexDirection: "row",
@@ -996,6 +999,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: height - "50%",
+  },
+  boardStyle: {
+    width: width - "10%",
+    alignContent: "center",
+    justifyContent: "center",
   },
   square: {
     justifyContent: "center",

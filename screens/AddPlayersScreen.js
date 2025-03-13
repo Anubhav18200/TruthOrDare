@@ -20,6 +20,11 @@ export default function AddPlayersScreen({ navigation }) {
   };
 
   const addPlayer = () => {
+    if (players.length >= 6) {
+      // Optionally, you can show an alert or message to the user
+      alert('Maximum 6 players allowed');
+      return;
+    }
     if (playerName.trim()) {
       setPlayers([...players, { id: players.length + 1, name: playerName.trim() }]);
       setPlayerName("");
@@ -39,7 +44,7 @@ export default function AddPlayersScreen({ navigation }) {
     >
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Add Players</Text>
-        <Text style={styles.subtitle}>Minimum 2 players required</Text>
+        <Text style={styles.subtitle}>Players : 2 - 6 </Text>
       </View>
 
       <View style={styles.inputContainer}>
