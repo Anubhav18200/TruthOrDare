@@ -360,8 +360,7 @@ export default function GameBoardScreen({ route, navigation }) {
     if (diceSound) {
       await diceSound.replayAsync();
     }
-    const roll = 98;
-    //const roll = Math.floor(Math.random() * 6) + 1;
+    const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
     Animated.sequence([
