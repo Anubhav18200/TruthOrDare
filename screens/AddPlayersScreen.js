@@ -56,6 +56,7 @@ export default function AddPlayersScreen({ navigation }) {
             value={playerName}
             onChangeText={setPlayerName}
             onSubmitEditing={addPlayer}
+            maxLength={30}
           />
         </Animated.View>
         <TouchableOpacity 

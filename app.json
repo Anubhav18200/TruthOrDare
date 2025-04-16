@@ -2,7 +2,7 @@
   "expo": {
     "name": "TruthOrDare",
     "slug": "TruthOrDare",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/App_Icon.png",
     "userInterfaceStyle": "light",
