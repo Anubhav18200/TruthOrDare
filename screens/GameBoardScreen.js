@@ -9,7 +9,9 @@ import {
   Dimensions,
 } from "react-native";
 import { tasks } from "../Data/tasksData.js";
-import {Image} from 'expo-image'
+import { Image } from "expo-image";
+import { Audio } from "expo-av";
+import { stopMusic } from "../Data/MusicService"; // Import stopMusic from MusicService
 
 const playerIcons = [
   require("../assets/p1.png"),
@@ -23,8 +25,13 @@ const playerIcons = [
 const giftIcon = require("../assets/gift.png");
 const rewardGif = require("../assets/reward.gif");
 const penaltyGif = require("../assets/penalty.gif");
-const ghostImg = require("../assets/ex1.gif");
+const randomImg = require("../assets/ghost.gif");
 const exerImg = require("../assets/ex1.gif");
+const singImg = require("../assets/singing.gif");
+const danceImg = require("../assets/dancing.gif");
+const actImg = require("../assets/funny.gif");
+
+const { width, height } = Dimensions.get("window");
 
 export default function GameBoardScreen({ route, navigation }) {
   const { players, environment } = route.params;
@@ -39,7 +46,7 @@ export default function GameBoardScreen({ route, navigation }) {
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
-  const [timer, setTimer] = useState(120);
+  const [timer, setTimer] = useState(150);
   const [currentTask, setCurrentTask] = useState(null);
   const [showRewardPenaltyModal, setShowRewardPenaltyModal] = useState(false);
   const [rewardPenaltyGif, setRewardPenaltyGif] = useState(null);
@@ -53,9 +60,20 @@ export default function GameBoardScreen({ route, navigation }) {
   const [scale] = useState(new Animated.Value(0.8));
   const [rotateAnimation] = useState(new Animated.Value(0));
   const [pulseAnimation] = useState(new Animated.Value(1));
+  const [extraMoves, setExtraMoves] = useState(null);
+  const [showMoves, setShowMoves] = useState(false);
+
+  // State for sounds
+  const [diceSound, setDiceSound] = useState(null);
+  const [movementSound, setMovementSound] = useState(null);
+  const [rewardSound, setRewardSound] = useState(null);
+  const [penaltySound, setPenaltySound] = useState(null);
+
+  const [truthCounts, setTruthCounts] = useState(Array(players.length).fill(0));
+
   const boardSize = 100;
-  const { width } = Dimensions.get("window");
-  const squareSize = 38;
+
+  const squareSize = (width - 11) / 10;
 
   const generateRandomGiftPositions = () => {
     const giftPositions = new Set();
@@ -111,6 +129,50 @@ export default function GameBoardScreen({ route, navigation }) {
 
     return <View style={styles.face}>{renderDots(number)}</View>;
   };
+
+  useEffect(() => {
+    stopMusic(); // Stop music when the screen is loaded
+  }, []);
+
+  // Load sounds when the component mounts
+  useEffect(() => {
+    const loadSounds = async () => {
+      const { sound: dice } = await Audio.Sound.createAsync(
+        require("../assets/dice.mp3")
+      );
+      const { sound: movement } = await Audio.Sound.createAsync(
+        require("../assets/p_icon_sound.wav")
+      );
+      const { sound: reward } = await Audio.Sound.createAsync(
+        require("../assets/victory.wav")
+      );
+      const { sound: penalty } = await Audio.Sound.createAsync(
+        require("../assets/lost.wav")
+      );
+      setDiceSound(dice);
+      setMovementSound(movement);
+      setRewardSound(reward);
+      setPenaltySound(penalty);
+    };
+
+    loadSounds();
+
+    // Cleanup sounds when the component unmounts
+    return () => {
+      if (diceSound) {
+        diceSound.unloadAsync();
+      }
+      if (movementSound) {
+        movementSound.unloadAsync();
+      }
+      if (rewardSound) {
+        rewardSound.unloadAsync();
+      }
+      if (penaltySound) {
+        penaltySound.unloadAsync();
+      }
+    };
+  }, []);
 
   // Add pulse animation effect
   useEffect(() => {
@@ -170,12 +232,12 @@ export default function GameBoardScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [showTaskModal, timer, showCategoryImage]);
 
-  const animatePlayerMovement = (startPos, endPos, isReward = false) => {
+  const animatePlayerMovement = async (startPos, endPos, isReward = false) => {
     setIsMoving(true);
     let currentPosition = startPos;
     const direction = endPos > startPos ? 1 : -1;
 
-    const moveOneStep = () => {
+    const moveOneStep = async () => {
       if (
         (direction === 1 && currentPosition < endPos) ||
         (direction === -1 && currentPosition > endPos)
@@ -185,21 +247,48 @@ export default function GameBoardScreen({ route, navigation }) {
         newPositions[currentPlayerIndex] = currentPosition;
         setPlayerPositions(newPositions);
 
-        setTimeout(moveOneStep, 400);
+        // Play player movement sound for each step
+        if (movementSound) {
+          await movementSound.replayAsync();
+        }
+
+        setTimeout(moveOneStep, 300);
       } else {
         setIsMoving(false);
-        checkGameStatus([...playerPositions]);
 
+        // Update the player's position and check if they have reached 100
+        const newPositions = [...playerPositions];
+        newPositions[currentPlayerIndex] = currentPosition;
+        setPlayerPositions(newPositions);
+
+        // Call checkGameStatus to update the game state
+        checkGameStatus(newPositions);
+
+        // Check if player landed on a gift and this wasn't a reward movement
         if (randomGiftPositions.includes(endPos) && !isReward) {
           const randomChoice = Math.floor(Math.random() * 2);
           setRewardPenaltyGif(randomChoice === 0 ? rewardGif : penaltyGif);
-          console.log(rewardPenaltyGif);
+          setShowRewardPenaltyModal(true);
+
+          // Play reward or penalty sound
+          if (randomChoice === 0 && rewardSound) {
+            await rewardSound.replayAsync();
+          } else if (penaltySound) {
+            await penaltySound.replayAsync();
+          }
+          setTimeout(() => {
+            setShowRewardPenaltyModal(false);
+            setShowTruthDareModal(true);
+          }, 3000);
+        } else if (randomGiftPositions.includes(endPos) && isReward) {
+          // If landed on a gift after a reward movement, trigger another task
           setShowRewardPenaltyModal(true);
           setTimeout(() => {
             setShowRewardPenaltyModal(false);
             setShowTruthDareModal(true);
-        }, 6000);
+          }, 3000);
         } else {
+          // No gift encountered, move to next player
           const nextPlayer = findNextActivePlayer(currentPlayerIndex);
           if (nextPlayer !== -1) {
             setCurrentPlayerIndex(nextPlayer);
@@ -215,17 +304,27 @@ export default function GameBoardScreen({ route, navigation }) {
   const checkGameStatus = (newPositions) => {
     const newFinishedPlayers = [...finishedPlayers];
 
+    // Check if the current player has reached 100
     if (
       newPositions[currentPlayerIndex] >= 100 &&
       !finishedPlayers.includes(currentPlayerIndex)
     ) {
+      //console.log("Player", currentPlayerIndex, "has reached 100!");
       newFinishedPlayers.push(currentPlayerIndex);
       setFinishedPlayers(newFinishedPlayers);
-      newPositions[currentPlayerIndex] = 100;
+      newPositions[currentPlayerIndex] = 100; // Ensure the player doesn't go beyond 100
     }
 
+    // Check if all players have reached 100
     if (newFinishedPlayers.length === players.length) {
-      setIsGameFinished(true);
+      //console.log("All players have reached 100. Game over!");
+      setIsGameFinished(true); // End the game
+    } else if (finishedPlayers.includes(currentPlayerIndex)) {
+      // If the current player has finished, move to the next player
+      const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+      if (nextPlayer !== -1) {
+        setCurrentPlayerIndex(nextPlayer);
+      }
     }
   };
 
@@ -244,12 +343,23 @@ export default function GameBoardScreen({ route, navigation }) {
     return fullRotation ? -1 : nextIndex;
   };
 
-  const rollDice = () => {
-    if (isMoving || finishedPlayers.includes(currentPlayerIndex)) {
+  const rollDice = async () => {
+    // Prevent rolling if:
+    // 1. The game is finished (`isGameFinished` is true)
+    // 2. The current player has already reached 100 (`finishedPlayers` includes `currentPlayerIndex`)
+    // 3. The player is currently moving (`isMoving` is true)
+    if (
+      isMoving ||
+      finishedPlayers.includes(currentPlayerIndex) ||
+      isGameFinished
+    ) {
       return;
     }
 
     setIsRolling(true);
+    if (diceSound) {
+      await diceSound.replayAsync();
+    }
     const roll = Math.floor(Math.random() * 6) + 1;
     setDiceRoll(roll);
 
@@ -266,8 +376,19 @@ export default function GameBoardScreen({ route, navigation }) {
       }),
     ]).start(() => {
       const startPos = playerPositions[currentPlayerIndex];
-      const endPos = Math.min(startPos + roll, 100);
-      animatePlayerMovement(startPos, endPos);
+      const endPos = startPos + roll;
+
+      // Check if the player can move without exceeding 100
+      if (endPos <= 100) {
+        animatePlayerMovement(startPos, endPos);
+      } else {
+        // Player cannot move, switch to the next player
+        const nextPlayer = findNextActivePlayer(currentPlayerIndex);
+        if (nextPlayer !== -1) {
+          setCurrentPlayerIndex(nextPlayer);
+        }
+        setIsRolling(false);
+      }
     });
   };
 
@@ -299,23 +420,62 @@ export default function GameBoardScreen({ route, navigation }) {
 
   const handleTruthDareSelection = (type) => {
     setSelectedType(type);
-    const categories = Object.keys(tasks[environment][type]);
-    const randomCategory =
+
+    if (type === "Truth") {
+      // Check if the player has already taken 3 truths
+      if (truthCounts[currentPlayerIndex] >= 3) {
+        alert("You have already taken 3 truths. Please choose Dare.");
+        return;
+      }
+
+      // Select a random player to ask the question (excluding the current player)
+      const otherPlayers = players.filter(
+        (_, index) => index !== currentPlayerIndex
+      );
+      const randomPlayer =
+        otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+
+      // Set the task modal text
+      setCurrentTask({
+        type: "Truth",
+        task: `${randomPlayer.name} will ask you the question.`,
+      });
+
+      // Show the task modal directly
+      setShowTruthDareModal(false);
+      setShowTaskModal(true);
+      setTimer(150);
+    } else {
+      // For Dare, proceed as before
+      const categories = Object.keys(tasks[environment][type]);
+      const randomCategory =
       categories[Math.floor(Math.random() * categories.length)];
 
-    setSelectedCategoryImage(randomCategory === "Ghost" ? ghostImg : exerImg);
+      // Set the category image
+      if (randomCategory === "Singing") {
+        setSelectedCategoryImage(singImg);
+      } else if (randomCategory === "Exercise") {
+        setSelectedCategoryImage(exerImg);
+      } else if (randomCategory === "Dancing") {
+        setSelectedCategoryImage(danceImg);
+      } else if (randomCategory === "Acting") {
+        setSelectedCategoryImage(actImg);
+      } else {
+        setSelectedCategoryImage(randomImg);
+      }
 
-    const selectedCategoryData = tasks[environment][type][randomCategory];
-    const selectedTasks = {
-      Easy: getRandomTask(selectedCategoryData.Easy),
-      Medium: getRandomTask(selectedCategoryData.Medium),
-      Hard: getRandomTask(selectedCategoryData.Hard),
-    };
+      const selectedCategoryData = tasks[environment][type][randomCategory];
+      const selectedTasks = {
+        Easy: getRandomTask(selectedCategoryData.Easy),
+        Medium: getRandomTask(selectedCategoryData.Medium),
+        Hard: getRandomTask(selectedCategoryData.Hard),
+      };
 
-    setRandomTasks(selectedTasks);
-    setSelectedCategory(randomCategory);
-    setShowTruthDareModal(false);
-    setShowDifficultyModal(true);
+      setRandomTasks(selectedTasks);
+      setSelectedCategory(randomCategory);
+      setShowTruthDareModal(false);
+      setShowDifficultyModal(true);
+    }
   };
 
   const getRandomTask = (tasksArray) => {
@@ -335,7 +495,7 @@ export default function GameBoardScreen({ route, navigation }) {
     setTimeout(() => {
       setShowCategoryImage(false);
       setShowTaskModal(true);
-      setTimer(120);
+      setTimer(150);
     }, 4000);
   };
 
@@ -343,7 +503,20 @@ export default function GameBoardScreen({ route, navigation }) {
     const currentPos = playerPositions[currentPlayerIndex];
     let move = 0;
 
-    if (currentTask) {
+    if (selectedType === "Truth") {
+      // For Truth, reward is +2 to +4, penalty is -2 to -4
+      const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1; // 50% chance for reward or penalty
+      move =
+        randomChoice === 0
+          ? Math.floor(Math.random() * 3) + 2
+          : -(Math.floor(Math.random() * 3) + 2);
+
+      // Increment the truth count for the current player
+      const newTruthCounts = [...truthCounts];
+      newTruthCounts[currentPlayerIndex] += 1;
+      setTruthCounts(newTruthCounts);
+    } else {
+      // For Dare, proceed as before
       const randomChoice = rewardPenaltyGif === rewardGif ? 0 : 1;
       const difficulty = currentTask.difficulty;
 
@@ -352,15 +525,19 @@ export default function GameBoardScreen({ route, navigation }) {
       } else {
         move = -getPenaltyMovement(difficulty);
       }
-
-      const newPosition = Math.max(1, Math.min(currentPos + move, 100));
-
-      setShowTaskModal(false);
-      setShowRewardPenaltyModal(false);
-      setTimer(120);
-
-      animatePlayerMovement(currentPos, newPosition, true);
     }
+
+    setExtraMoves(move);
+    const newPosition = Math.max(1, Math.min(currentPos + move, 100));
+
+    setShowTaskModal(false);
+    setShowRewardPenaltyModal(false);
+    setShowMoves(true);
+    setTimeout(() => {
+      setShowMoves(false);
+      animatePlayerMovement(currentPos, newPosition, true);
+    }, 3000);
+    setTimer(150);
   };
 
   const formatTime = (seconds) => {
@@ -376,131 +553,188 @@ export default function GameBoardScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Board Container*/}
       <View style={styles.gradientBackground}>
-        <Text style={styles.title}>Truth or Dare</Text>
-        <View style={[styles.board, { width: width - 10 }]}>
-          {[...Array(boardSize)].map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.square,
-                {
-                  width: squareSize,
-                  height: squareSize,
-                  backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
-                },
-              ]}
-            >
-              <Text style={styles.squareNumber}>
-                {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
-              </Text>
-              {playerPositions.map(
-                (pos, index) =>
-                  pos === i + 1 && (
-                    <Image
-                      key={index}
-                      source={playerIcons[index]}
-                      style={styles.playerIcon}
-                    />
-                  )
-              )}
-              {randomGiftPositions.includes(i + 1) && (
-                <Image source={giftIcon} style={styles.giftIcon} />
-              )}
-            </View>
-          ))}
+        <TouchableOpacity
+          style={styles.infoButton}
+          onPress={() => navigation.navigate("GameRules")}
+        >
+          <Text style={styles.infoButtonText}>?</Text>
+        </TouchableOpacity>
+
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>TRUTH OR DARE</Text>
+        </View>
+
+        {/* Board Container */}
+        <View style={styles.boardContainer}>
+          <View style={styles.board}>
+            {[...Array(boardSize)].map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.square,
+                  {
+                    width: squareSize,
+                    height: squareSize,
+                    backgroundColor: i % 2 === 0 ? "#f0f4f8" : "#e2e8f0",
+                  },
+                ]}
+              >
+                <Text style={styles.squareNumber}>
+                  {i === 0 ? "Go" : i === boardSize - 1 ? "End" : i + 1}
+                </Text>
+                {playerPositions.map(
+                  (pos, index) =>
+                    pos === i + 1 && (
+                      <Image
+                        key={index}
+                        source={playerIcons[index]}
+                        style={styles.playerIcon}
+                      />
+                    )
+                )}
+                {randomGiftPositions.includes(i + 1) && (
+                  <Image source={giftIcon} style={styles.giftIcon} />
+                )}
+              </View>
+            ))}
+          </View>
         </View>
       </View>
 
-      <View style={styles.bottomContainer}>
-        <View style={styles.playerTurnContainer}>
-          <Animated.View
-            style={[
-              styles.playerCard,
-              {
-                transform: [{ scale: pulseAnimation }],
-                borderWidth: 2,
-                borderColor: "#4299e1",
-              },
-            ]}
-          >
-            <View style={styles.yourTurnBadge}>
-              <Text style={styles.yourTurnText}>Your Turn </Text>
-            </View>
-            <Image
-              source={playerIcons[currentPlayerIndex]}
-              style={styles.playerCardIcon}
-            />
-            <View style={styles.playerCardInfo}>
-              <Text style={styles.playerCardName}>
-                {players[currentPlayerIndex].name}
-              </Text>
-            </View>
-          </Animated.View>
-
+      {/* Bottom Container */}
+      {isGameFinished ? (
+        // Show only the End Game button
+        <View style={styles.endGameButtonContainer}>
           <TouchableOpacity
-            onPress={rollDice}
-            disabled={
-              isRolling ||
-              isMoving ||
-              finishedPlayers.includes(currentPlayerIndex)
+            style={[styles.button, { backgroundColor: "#4CAF50" }]}
+            onPress={() =>
+              navigation.navigate("EndGame", {
+                players: players.map((player, index) => ({
+                  ...player,
+                  position: finishedPlayers.indexOf(index) + 1,
+                })),
+              })
             }
-            style={styles.diceWrapper}
           >
+            <Text style={styles.buttonText}>End Game</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // Show the regular bottom container
+        <View style={styles.bottomContainer}>
+          <View style={styles.playerTurnContainer}>
             <Animated.View
               style={[
-                styles.dice,
+                styles.playerCard,
                 {
-                  transform: [{ rotate: rotation }],
-                  opacity:
-                    isRolling ||
-                    isMoving ||
-                    finishedPlayers.includes(currentPlayerIndex)
-                      ? 0.5
-                      : 1,
+                  transform: [{ scale: pulseAnimation }],
+                  borderWidth: 2,
+                  borderColor: "#4299e1",
                 },
               ]}
             >
-              <DiceFace number={diceRoll} />
-            </Animated.View>
-            <Text style={styles.rollText}>
-              {isRolling
-                ? "Rolling..."
-                : isMoving
-                ? "Moving..."
-                : "Tap to Roll"}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.nextPlayerPreview}>
-            <View style={styles.nextPlayerInfo}>
-            <Text style={styles.nextPlayerLabel}>Next Player</Text>
+              <View style={styles.yourTurnBadge}>
+                <Text style={styles.yourTurnText}>Your Turn </Text>
+              </View>
               <Image
-                source={playerIcons[(currentPlayerIndex + 1) % players.length]}
-                style={styles.nextPlayerIcon}
+                source={playerIcons[currentPlayerIndex]}
+                style={styles.playerCardIcon}
               />
-              <View>
-                <Text style={styles.nextPlayerName}>
-                  {players[(currentPlayerIndex + 1) % players.length].name}
+              <View style={styles.playerCardInfo}>
+                <Text style={styles.playerCardName}>
+                  {players[currentPlayerIndex].name}
                 </Text>
+              </View>
+            </Animated.View>
+
+            <TouchableOpacity
+              onPress={rollDice}
+              disabled={
+                isRolling ||
+                isMoving ||
+                finishedPlayers.includes(currentPlayerIndex) ||
+                isGameFinished
+              }
+              style={[
+                styles.diceWrapper,
+                finishedPlayers.includes(currentPlayerIndex) || isGameFinished
+                  ? styles.disabledDice
+                  : null,
+              ]}
+            >
+              <Animated.View
+                style={[
+                  styles.dice,
+                  {
+                    transform: [{ rotate: rotation }],
+                    opacity:
+                      isRolling ||
+                      isMoving ||
+                      finishedPlayers.includes(currentPlayerIndex) ||
+                      isGameFinished
+                        ? 0.5
+                        : 1,
+                  },
+                ]}
+              >
+                <DiceFace number={diceRoll} />
+              </Animated.View>
+              <Text style={styles.rollText}>
+                {isRolling
+                  ? "Rolling..."
+                  : isMoving
+                  ? "Moving..."
+                  : finishedPlayers.includes(currentPlayerIndex)
+                  ? "Finished"
+                  : isGameFinished
+                  ? "Game Over"
+                  : "Tap to Roll"}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.nextPlayerPreview}>
+              <View style={styles.nextPlayerInfo}>
+                <Text style={styles.nextPlayerLabel}>Next Player</Text>
+                <Image
+                  source={
+                    playerIcons[(currentPlayerIndex + 1) % players.length]
+                  }
+                  style={styles.nextPlayerIcon}
+                />
+                <View>
+                  <Text style={styles.nextPlayerName}>
+                    {players[(currentPlayerIndex + 1) % players.length].name}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* Truth/Dare Modal */}
       <Modal visible={showTruthDareModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Your Path</Text>
-              <Text style={styles.modalSubtitle}>Truth or Dare awaits...</Text>
+              <Text style={styles.modalTitle}>MAKE YOUR CHOICE</Text>
+              <Text style={styles.modalSubtitle}>
+                {truthCounts[currentPlayerIndex] < 3
+                  ? `${3 - truthCounts[currentPlayerIndex]} Truths left`
+                  : "No Truths left. Choose Dare."}
+              </Text>
             </View>
             <View style={styles.truthDareContainer}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.truthButton]}
+                style={[
+                  styles.modalButton,
+                  styles.truthButton,
+                  truthCounts[currentPlayerIndex] >= 3 && styles.disabledButton,
+                ]}
                 onPress={() => handleTruthDareSelection("Truth")}
+                disabled={truthCounts[currentPlayerIndex] >= 3}
               >
                 <Text style={styles.modalButtonText}>TRUTH</Text>
               </TouchableOpacity>
@@ -520,7 +754,7 @@ export default function GameBoardScreen({ route, navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Difficulty</Text>
+              <Text style={styles.modalTitle}>SELECT DIFFICULTY</Text>
               <Text style={styles.modalSubtitle}>
                 Choose your challenge level
               </Text>
@@ -581,7 +815,7 @@ export default function GameBoardScreen({ route, navigation }) {
               source={selectedCategoryImage}
               style={styles.categoryImage}
             />
-           </Animated.View>
+          </Animated.View>
         )}
       </View>
 
@@ -626,54 +860,53 @@ export default function GameBoardScreen({ route, navigation }) {
       <Modal visible={showRewardPenaltyModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View>
-            <View style={styles.modalHeader}>
-            </View>
+            <Text style={styles.rewardPenaltyTitle}>
+              {rewardPenaltyGif === rewardGif ? "REWARD" : "PENALTY"}
+            </Text>
+            <View style={styles.modalHeader}></View>
             <Image
               source={rewardPenaltyGif}
               style={styles.rewardPenaltyImage}
             />
-            {/* <TouchableOpacity
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor:
-                    rewardPenaltyGif === rewardGif ? "#4CAF50" : "#F44336",
-                },
-              ]}
-              onPress={() => {
-                setShowRewardPenaltyModal(false);
-                setShowTruthDareModal(true);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Continue</Text>
-            </TouchableOpacity> */}
           </View>
         </View>
       </Modal>
-
-      {isGameFinished && (
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#4CAF50" }]}
-          onPress={() =>
-            navigation.navigate("EndGame", {
-              players: players.map((player, index) => ({
-                ...player,
-                position: finishedPlayers.indexOf(index) + 1,
-              })),
-            })
-          }
-        >
-          <Text style={styles.buttonText}>End Game</Text>
-        </TouchableOpacity>
-      )}
+      {/* ShowMoves Modal */}
+      <Modal visible={showMoves} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View>
+            <View style={styles.modalHeader}></View>
+            <Text style={styles.moves}>You will Move {extraMoves} Steps</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  finishedBadge: {
+    backgroundColor: "#48BB78",
+  },
+
+  disabledButton: {
+    opacity: 0.5,
+  },
+
+  disabledDice: {
+    opacity: 0.5,
+  },
+
+  moves: {
+    marginBottom: 110,
+    fontWeight: "bold",
+    fontSize: 50,
+    color: "white",
+    textAlign: "center",
+  },
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#1a365d",
   },
@@ -681,41 +914,53 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#2a4365",
     paddingTop: 20,
+    width: '100%',
     alignItems: "center",
+  },
+  titleContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  boardContainer: {
+    flex: 1, // Take up remaining space
+    justifyContent: "center", // Center the board vertically
+    alignItems: "center",
+    width: "100%",
   },
   imgcontainer: {
     flex: 1, // Take up the full screen
     justifyContent: "center", // Center the content vertically
     alignItems: "center", // Center the content horizontally
     position: "absolute", // Position it on top of the game screen
-    top: '25%', // Align at the top of the screen
-    left: '25%', // Align at the left of the screen
-    width: "50%", // Take full width
-    height: "50%", // Take full height
+    width: width, // Take full width
+    height: height, // Take full height
+    top: 150, // Align to the top
+    left: 0, // Align to the left
   },
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
-    flex: 1, // Take at least half the screen height
-    width: "100%", // Full width
-    height: "50%", // Ensure it covers half the screen or more
-    position: "absolute", // Keep it in front of the other content
+    width: width * 1, // 80% of screen width
+    height: height * 0.5, // 50% of screen height
+    bottom: height * 0.2, // 20% from the bottom
     zIndex: 1000, // Higher z-index to stay on top
   },
   categoryImage: {
-    width: 400, // Adjust the size as needed
-    height: 150, // Adjust the size as needed
-    borderRadius: 10,
+    width: "100%", // Adjust the size as needed
+    height: "100%", // Adjust the size as needed
+    resizeMode: "contain", // Ensure the image scales properly
   },
 
   title: {
     fontSize: 28,
+    marginTop: 40,
     fontWeight: "bold",
-    marginTop: 100,
-    marginBottom: 0,
     color: "#fff",
-    textTransform: "uppercase",
     letterSpacing: 1,
+  },
+  textStyle: {
+    marginTop: 70,
   },
   playerInfo: {
     flexDirection: "row",
@@ -746,12 +991,18 @@ const styles = StyleSheet.create({
   board: {
     flexWrap: "wrap",
     flexDirection: "row",
-    marginTop: "10%",
     borderColor: "#ddd",
-    backgroundColor: "#fff",
-    borderRadius: 5,
     overflow: "hidden",
-    padding: 0,
+    backgroundColor : 'white',
+    padding: 5,
+    alignItems: "center",
+    width: "100%",
+    height: height - "50%",
+  },
+  boardStyle: {
+    width: width - "10%",
+    alignContent: "center",
+    justifyContent: "center",
   },
   square: {
     justifyContent: "center",
@@ -764,29 +1015,35 @@ const styles = StyleSheet.create({
   },
   squareNumber: {
     position: "absolute",
-    top: 5,
+    top: "30%",
     fontSize: 12,
     color: "#4a5568",
   },
   playerIcon: {
-    width: 20,
-    height: 35,
+    width: "70%",
+    height: "100%",
     position: "absolute",
     borderRadius: 15,
-    zIndex:2,
+    zIndex: 2,
   },
   giftIcon: {
-    width: 30,
-    height: 30,
+    width: "90%",
+    height: "90%",
     position: "absolute",
-    bottom: 5,
+  },
+  endGameButtonContainer: {
+    position: "absolute",
+    bottom: 30,
+    width: "50%",
+    alignItems: "center",
   },
   button: {
     backgroundColor: "#FF9800",
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
-    marginTop: 20,
-    marginBottom: 160,
+    height: '120%',
+    width: "80%",
+    alignItems: "center",
   },
   buttonText: {
     color: "#FFF",
@@ -886,9 +1143,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#F44336",
   },
   rewardPenaltyImage: {
-    width: 320,
-    height: 220,
-    marginBottom: 25,
+    width: 380,
+    height: 320,
+    marginBottom: 35,
+    marginRight: 80,
+  },
+  rewardPenaltyTitle: {
+    fontSize: 50,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    color: "white",
+    letterSpacing: 2,
   },
   truthDareContainer: {
     flexDirection: "row",
@@ -933,10 +1199,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   bottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    display: "flex",
-    flexDirection: "row",
+    width: "100%",
     backgroundColor: "#2d3748",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -957,9 +1220,9 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 10,
   },
-  yourTurnText:{
-    color:"#a0aec0",
-    marginBottom:7,
+  yourTurnText: {
+    color: "#a0aec0",
+    marginBottom: 7,
   },
   playerCard: {
     flexDirection: "column",
@@ -1045,7 +1308,7 @@ const styles = StyleSheet.create({
   nextPlayerInfo: {
     fontSize: 12,
     color: "#a0aec0",
-    alignItems:'center',
+    alignItems: "center",
   },
   nextPlayerIcon: {
     width: 40,
@@ -1070,5 +1333,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#4299e1",
     borderRadius: 6,
     //position: 'absolute',
+  },
+  infoButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoButtonText: {
+    fontSize: 24,
+    color: "#FFFFFF",
   },
 });
